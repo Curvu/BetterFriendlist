@@ -288,7 +288,7 @@ package {
       this.buildTabButtons();
       this.buildHeaderItems();
       this._requests = renderer.text(0,0,TEXT_FORMAT_REQUESTS,"",true,"");
-      this._requests.x = 123;
+      this._requests.x = 147;
       this._requests.y = -1;
       this.header_section.addChild(this._requests);
       this.help_area = renderer.rectangle(new Sprite(),365,-1,3 * 60,45,855319,1);
