@@ -370,7 +370,6 @@ package {
       this.header_items[TAB_ALL][1].addEventListener(MouseEvent.MOUSE_OUT,this.onHelpMouseOut);
 
       this.header_items[TAB_QUICK][1].addClickListener(this.onClearQuickList);
-      this.header_items[TAB_QUICK][1].disabled = true;
       this.header_items[TAB_QUICK][2].addClickListener(this.onInviteQuickList);
       this.header_items[TAB_QUICK][2].count = 0;
 
@@ -403,7 +402,6 @@ package {
       while(0 < this.list_quick.length) this.list_quick[0].onQuickList();
       abi.configWrite("quick_list");
       this.header_items[TAB_QUICK][2].count = 0;
-      this.header_items[TAB_QUICK][1].disabled = true;
     }
 
 
@@ -462,7 +460,6 @@ package {
         ExternalInterface.call("OnTabClick",0);
         this._online.alpha = 1;
       }
-      this.header_items[TAB_QUICK][1].disabled = this.list_quick.length == 0;
       this.tab = TAB_QUICK;
     }
 
@@ -676,7 +673,6 @@ package {
       if(this.list_quick.indexOf(f) == -1) {
         this.list_quick.push(f);
         this.header_items[TAB_QUICK][2].count++;
-        this.header_items[TAB_QUICK][1].disabled = false;
       }
       abi.configWrite("quick_list");
     }
@@ -686,7 +682,6 @@ package {
       if(idx != -1) {
         this.list_quick.splice(idx,1);
         this.header_items[TAB_QUICK][2].count--;
-        if(this.header_items[TAB_QUICK][2].count == 0) this.header_items[TAB_QUICK][1].disabled = true;
       }
       if(this.tab == TAB_QUICK) this.onSortTimerComplete();
       if(is_internal) abi.configWrite("quick_list");
