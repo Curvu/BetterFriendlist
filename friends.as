@@ -589,7 +589,7 @@ package {
         this.list_request.sortOn(["can_accept", "name"], [Array.DESCENDING, Array.CASEINSENSITIVE]);
         this.render_list = this.render_list.concat(this.list_request);
       } else if(this.tab == TAB_FAV) {
-        this.list_fav.sortOn("name", Array.CASEINSENSITIVE);
+        this.list_fav.sortOn(["is_online", "name"], [Array.DESCENDING, Array.CASEINSENSITIVE]);
         this.render_list = this.render_list.concat(this.list_fav);
       } else if(this.tab == TAB_QUICK) {
         this.list_quick.sortOn(["is_online", "name"], [Array.DESCENDING, Array.CASEINSENSITIVE]);
@@ -602,7 +602,7 @@ package {
         this.list_leechers.sortOn("name", Array.CASEINSENSITIVE);
         this.render_list = this.render_list.concat(this.list_cleaners).concat(this.list_leechers);
       } else {
-        this.list_fav.sortOn("name",Array.CASEINSENSITIVE);
+        this.list_fav.sortOn(["is_online", "name"], [Array.DESCENDING, Array.CASEINSENSITIVE]);
         this.list_default.sortOn(["is_online", "name"], [Array.DESCENDING, Array.CASEINSENSITIVE]);
         this.render_list = this.render_list.concat(this.list_fav).concat(this.list_default);
       }
