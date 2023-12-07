@@ -29,6 +29,9 @@ package {
     private var _tab:int = 0;
     public var lookup:Object;
 
+    public var leechers_count:int = 0;
+    public var cleaners_count:int = 0;
+
     public var header_btns:Array = [];
     public var header_items:Array = [];
     private var help_area:Sprite;
@@ -101,7 +104,12 @@ package {
     }
 
     public function set online(num:int) : void {
-      if(this.tab != TAB_IGNORED) this._online.htmlText = "<b>" + num + "</b><font color=\"#CECED7\">/" + (this.list.length - this.list_request.length - this.list_ignored.length) + "</font> " + FRIENDS_ONLINE;
+      if(tab == TAB_SHIP) {
+        this._online.htmlText = "<font color=\"#CECED7\">" + this.leechers_count + " LEECHES / " + this.cleaners_count + " CLEANERS</font>";
+      } else if(this.tab != TAB_IGNORED) {
+        this._online.htmlText = "<b>" + num + "</b><font color=\"#CECED7\">/" + (this.list.length - this.list_request.length - this.list_ignored.length) + "</font> " + FRIENDS_ONLINE;
+      }
+
       this.num_online = num;
     }
 
@@ -135,8 +143,15 @@ package {
         this.header_items[TAB_QUICK][2].count++;
       }
 
-      if(abi.leechers[friend.uid]) this.list_leechers.push(friend);
-      if(abi.cleaners[friend.uid]) this.list_cleaners.push(friend);
+      if(abi.leechers[friend.uid]) {
+        this.list_leechers.push(friend);
+        this.leechers_count++;
+      }
+
+      if(abi.cleaners[friend.uid]) {
+        this.list_cleaners.push(friend);
+        this.cleaners_count++;
+      }
 
       if(is_online) ++this.online;
       else if(is_request && can_accept) {
@@ -181,6 +196,8 @@ package {
       this.list.splice(idx,1);
       if(f.is_online) {
         if(abi.quick[f.uid]) this.header_items[TAB_QUICK][2].count--;
+        if(abi.leechers[f.uid]) this.leechers_count--;
+        if(abi.cleaners[f.uid]) this.cleaners_count--;
         --this.online;
       } else if(f.is_request && f.can_accept) {
         --this.requests;
@@ -228,6 +245,8 @@ package {
       this.online = 0;
       this.header_items[TAB_QUICK][2].count = 0;
       this.header_items[TAB_REQUEST][1].count = 0;
+      this.leechers_count = 0;
+      this.cleaners_count = 0;
       this.requests = 0;
       this.lookup = {};
     }
@@ -419,6 +438,8 @@ package {
       while(0 < this.list_cleaners.length) this.list_cleaners[0].onClean();
       abi.configWrite("list_leechers");
       abi.configWrite("list_cleaners");
+      this.leechers_count = 0;
+      this.cleaners_count = 0;
     }
 
     private function onAcceptAll() : void {
@@ -690,6 +711,7 @@ package {
     public function onLeecherAdd(f:Friend) : void {
       if(this.list_leechers.indexOf(f) == -1 && this.list_cleaners.indexOf(f) == -1) {
         this.list_leechers.push(f);
+        this.leechers_count++;
         abi.configWrite("list_leechers");
       }
     }
@@ -698,6 +720,7 @@ package {
       var idx:int = this.list_leechers.indexOf(f);
       if(idx != -1) {
         this.list_leechers.splice(idx, 1);
+        this.leechers_count--;
         abi.configWrite("list_leechers");
         this.onSortTimerComplete();
       }
@@ -706,6 +729,7 @@ package {
     public function onCleanerAdd(f:Friend) : void {
       if(this.list_cleaners.indexOf(f) == -1 && this.list_leechers.indexOf(f) == -1) {
         this.list_cleaners.push(f);
+        this.cleaners_count++;
         abi.configWrite("list_cleaners");
       }
     }
@@ -714,6 +738,7 @@ package {
       var idx:int = this.list_cleaners.indexOf(f);
       if(idx != -1) {
         this.list_cleaners.splice(idx, 1);
+        this.cleaners_count--;
         abi.configWrite("list_cleaners");
         this.onSortTimerComplete();
       }
