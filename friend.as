@@ -291,6 +291,7 @@ package {
 
       if(!this.can_join) this.btnJoin.disabled = true;
       else this.btnJoin.addEventListener(MouseEvent.CLICK,this.onJoin);
+      // this.btnJoin.addEventListener(MouseEvent.CLICK,this.onJoin);
 
       this.btnInvite.addEventListener(MouseEvent.CLICK,this.onInvite);
 
@@ -347,6 +348,7 @@ package {
     }
 
     public function onJoin() : void {
+      // ExternalInterface.call("OnJoinWorld",this.uid);
       if(this.can_join) ExternalInterface.call("OnJoinWorld",this.uid);
     }
 
