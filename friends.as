@@ -378,9 +378,10 @@ package {
 
       var ship:Array = [
         renderer.text(1, 28, TEXT_FORMAT_HEADERS, "left", true, "SHIP LIST"),
-        new txtbtn(14, 13, "x", 248, 30),
-        new txtbtn(46, 13, "ALL", 263, 30),
-        new txtbtn(46, 13, "LEECHES", 310, 30)
+        new txtbtn(14, 13, "x", 188, 30),
+        new txtbtn(46, 13, "ALL", 203, 30),
+        new txtbtn(53, 13, "CLEANERS", 250, 30),
+        new txtbtn(53, 13, "LEECHERS", 304, 30)
       ];
       this.header_items[TAB_SHIP] = ship;
 
@@ -398,7 +399,8 @@ package {
 
       this.header_items[TAB_SHIP][1].addClickListener(this.onClearShipList);
       this.header_items[TAB_SHIP][2].addClickListener(this.onInviteShipList);
-      this.header_items[TAB_SHIP][3].addClickListener(this.onInviteLeechers);
+      this.header_items[TAB_SHIP][3].addClickListener(this.onInviteCleaners);
+      this.header_items[TAB_SHIP][4].addClickListener(this.onInviteLeechers);
     }
 
     private function onHelpMouseOver() : void {
@@ -423,6 +425,9 @@ package {
       this.header_items[TAB_QUICK][2].count = 0;
     }
 
+    private function onInviteCleaners() : void {
+      for each (var f:Friend in this.list_cleaners) f.onInvite();
+    }
 
     private function onInviteLeechers() : void {
       for each (var f:Friend in this.list_leechers) f.onInvite();
