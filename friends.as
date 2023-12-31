@@ -39,10 +39,11 @@ package {
     // Tab constants
     public static const TAB_ALL:uint = 0;
     public static const TAB_FAV:uint = 1;
-    public static const TAB_QUICK:uint = 2;
-    public static const TAB_SHIP:uint = 3;
-    public static const TAB_REQUEST:uint = 4;
-    public static const TAB_IGNORED:uint = 5;
+    public static const TAB_ALTS:uint = 2;
+    public static const TAB_QUICK:uint = 3;
+    public static const TAB_SHIP:uint = 4;
+    public static const TAB_REQUEST:uint = 5;
+    public static const TAB_IGNORED:uint = 6;
 
     // List arrays
     public var list:Array = [];
@@ -54,6 +55,7 @@ package {
     public var render_list:Array = [];
     public var list_cleaners:Array = [];
     public var list_leechers:Array = [];
+    public var list_alts:Array = [];
 
     public function Friends() {
       super();
@@ -105,7 +107,7 @@ package {
 
     public function set online(num:int) : void {
       if(tab == TAB_SHIP) {
-        this._online.htmlText = "<font color=\"#CECED7\">" + this.leechers_count + " LEECHES / " + this.cleaners_count + " CLEANERS</font>";
+        this._online.htmlText = "<font color=\"#CECED7\" size=\"9\">" + this.leechers_count + " LEECHES / " + this.cleaners_count + " CLEANERS</font>";
       } else if(this.tab != TAB_IGNORED) {
         this._online.htmlText = "<b>" + num + "</b><font color=\"#CECED7\">/" + (this.list.length - this.list_request.length - this.list_ignored.length) + "</font> " + FRIENDS_ONLINE;
       }
@@ -134,6 +136,7 @@ package {
       this.list.push(friend);
 
       if(abi.favs[friend.uid]) this.list_fav.push(friend);
+      else if(abi.alts[friend.uid]) this.list_alts.push(friend);
       else if(friend.is_request) this.list_request.push(friend);
       else if(friend.is_ignored) this.list_ignored.push(friend);
       else this.list_default.push(friend);
@@ -216,6 +219,15 @@ package {
       idx = this.list_ignored.indexOf(f);
       if(idx != -1) this.list_ignored.splice(idx,1);
 
+      idx = this.list_cleaners.indexOf(f);
+      if(idx != -1) this.list_cleaners.splice(idx,1);
+
+      idx = this.list_leechers.indexOf(f);
+      if(idx != -1) this.list_leechers.splice(idx,1);
+
+      idx = this.list_alts.indexOf(f);
+      if(idx != -1) this.list_alts.splice(idx,1);
+
       idx = this.list_default.indexOf(f);
       if(idx != -1) this.list_default.splice(idx,1);
 
@@ -240,6 +252,7 @@ package {
       this.list_ignored.splice(0);
       this.list_leechers.splice(0);
       this.list_cleaners.splice(0);
+      this.list_alts.splice(0);
       this.onSortTimerComplete();
       this.destroyAllReferences();
       this.online = 0;
@@ -321,6 +334,7 @@ package {
       this.header_btns = [
         new abbtn(abi.scale(new IconFriends(), 0.75), 24, 24),
         new abbtn(abi.scale(new IconHeart(), 0.75), 24, 24),
+        new abbtn(abi.scale(new IconAlts(), 0.75), 24, 24),
         new abbtn(abi.scale(new IconQuickList(), 0.75), 24, 24),
         new abbtn(abi.scale(new IconShip(), 0.75), 24, 24),
         new abbtn(abi.scale(new IconRequest(), 0.75), 24, 24),
@@ -335,6 +349,7 @@ package {
 
       this.header_btns[TAB_ALL].addEventListener(MouseEvent.CLICK,this.onTabAllClicked);
       this.header_btns[TAB_FAV].addEventListener(MouseEvent.CLICK,this.onTabFavClicked);
+      this.header_btns[TAB_ALTS].addEventListener(MouseEvent.CLICK,this.onTabAltsClicked);
       this.header_btns[TAB_QUICK].addEventListener(MouseEvent.CLICK,this.onTabQuickClicked);
       this.header_btns[TAB_SHIP].addEventListener(MouseEvent.CLICK,this.onTabShipClicked);
       this.header_btns[TAB_REQUEST].addEventListener(MouseEvent.CLICK,this.onTabRequestClicked);
@@ -356,6 +371,12 @@ package {
         renderer.text(316,28,TEXT_FORMAT_HEADERS,"left",true,abi.msg.JOIN)
       ];
       this.header_items[TAB_FAV] = fav;
+
+      var alts:Array = [
+        renderer.text(1,28,TEXT_FORMAT_HEADERS,"left",true,"ALTS"),
+        new txtbtn(93, 13, "INVITE ALL", 263, 30)
+      ];
+      this.header_items[TAB_ALTS] = alts;
 
       var quick:Array = [
         renderer.text(1,28,TEXT_FORMAT_HEADERS,"left",true,"QUICK LIST"),
@@ -389,6 +410,8 @@ package {
       this.header_items[TAB_ALL][1].addEventListener(MouseEvent.MOUSE_OVER,this.onHelpMouseOver);
       this.header_items[TAB_ALL][1].addEventListener(MouseEvent.MOUSE_OUT,this.onHelpMouseOut);
 
+      this.header_items[TAB_ALTS][1].addClickListener(this.onInviteAltsList);
+
       this.header_items[TAB_QUICK][1].addClickListener(this.onClearQuickList);
       this.header_items[TAB_QUICK][2].addClickListener(this.onInviteQuickList);
       this.header_items[TAB_QUICK][2].count = 0;
@@ -414,6 +437,10 @@ package {
     /* ---------------- */
     /*   Click Events   */
     /* ---------------- */
+
+    private function onInviteAltsList() : void {
+      for each (var f:Friend in this.list_alts) f.onInvite();
+    }
 
     private function onInviteQuickList() : void {
       for each (var f:Friend in this.list_quick) f.onInvite();
@@ -479,6 +506,14 @@ package {
         this._online.alpha = 1;
       }
       this.tab = TAB_FAV;
+    }
+
+    private function onTabAltsClicked() : void {
+      if(this.tab == TAB_IGNORED) {
+        ExternalInterface.call("OnTabClick",0);
+        this._online.alpha = 1;
+      }
+      this.tab = TAB_ALTS;
     }
 
     private function onTabQuickClicked() : void {
@@ -614,6 +649,9 @@ package {
       } else if(this.tab == TAB_FAV) {
         this.list_fav.sortOn(["is_online", "name"], [Array.DESCENDING, Array.CASEINSENSITIVE]);
         this.render_list = this.render_list.concat(this.list_fav);
+      } else if(this.tab == TAB_ALTS) {
+        this.list_alts.sortOn(["is_online", "name"], [Array.DESCENDING, Array.CASEINSENSITIVE]);
+        this.render_list = this.render_list.concat(this.list_alts);
       } else if(this.tab == TAB_QUICK) {
         this.list_quick.sortOn(["is_online", "name"], [Array.DESCENDING, Array.CASEINSENSITIVE]);
         this.render_list = this.render_list.concat(this.list_quick);
@@ -679,7 +717,7 @@ package {
       if(this.list_fav.indexOf(f) == -1) this.list_fav.push(f);
 
       var idx:int = this.list_default.indexOf(f);
-      if(idx != -1) this.list_default.splice(idx,1);
+      if(idx != -1) this.list_default.splice(idx, 1);
 
       this.onSortTimerComplete();
       abi.configWrite("favorites");
@@ -688,11 +726,31 @@ package {
     public function onFavoriteRemove(f:Friend) : void {
       var idx:int = this.list_fav.indexOf(f);
       if(idx != -1) {
-        this.list_fav.splice(idx,1);
+        this.list_fav.splice(idx, 1);
         this.list_default.push(f);
         this.onSortTimerComplete();
       }
       abi.configWrite("favorites");
+    }
+
+    public function onAltAdd(f:Friend) : void {
+      if(this.list_alts.indexOf(f) == -1) this.list_alts.push(f);
+
+      var idx:int = this.list_default.indexOf(f);
+      if(idx != -1) this.list_default.splice(idx, 1);
+
+      this.onSortTimerComplete();
+      abi.configWrite("alts");
+    }
+
+    public function onAltRemove(f:Friend) : void {
+      var idx:int = this.list_alts.indexOf(f);
+      if(idx != -1) {
+        this.list_alts.splice(idx, 1);
+        this.list_default.push(f);
+        this.onSortTimerComplete();
+      }
+      abi.configWrite("alts");
     }
 
     public function onQuickListAdd(f:Friend) : void {

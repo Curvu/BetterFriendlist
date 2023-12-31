@@ -46,6 +46,7 @@ package {
     };
 
     public static var favs:Object = {};
+    public static var alts:Object = {};
     public static var quick:Object = {};
     public static var cleaners:Object = {};
     public static var leechers:Object = {};
@@ -86,6 +87,9 @@ package {
       } else if(key == "favorites") {
         arr = processConfigList(val);
         if(arr) favs = arrayToObject(arr);
+      } else if(key == "alts") {
+        arr = processConfigList(val);
+        if(arr) alts = arrayToObject(arr);
       } else if(key == "quick_list") {
         arr = processConfigList(val);
         if(arr) quick = arrayToObject(arr);
@@ -125,6 +129,7 @@ package {
           out = String(val.toString());
         }
       } else if(key == "favorites") out = "[" + objectToArray(favs).join(",") + "]";
+      else if(key == "alts") out = "[" + objectToArray(alts).join(",") + "]";
       else if(key == "quick_list") out = "[" + objectToArray(quick).join(",") + "]";
       else if(key == "list_cleaners") out = "[" + objectToArray(cleaners).join(",") + "]";
       else if(key == "list_leechers") out = "[" + objectToArray(leechers).join(",") + "]";

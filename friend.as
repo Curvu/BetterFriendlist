@@ -311,6 +311,9 @@ package {
         this.btnHeart.toggled = true;
         this._name.textColor = 16201328;
         this._rank.textColor = 16250871;
+      } else if(abi.alts[this.uid]) {
+        this.btnHeart.toggled = true;
+        this._name.textColor = 4278255615;
       }
       this.btnHeart.addEventListener(MouseEvent.CLICK, this.onFavorite);
 
@@ -358,13 +361,21 @@ package {
 
     private function onFavorite() : void {
       var previous:Boolean = !!abi.favs[this.uid];
-      if(previous) {
-        this.btnHeart.toggled = false;
-        this._name.textColor = 16250871;
-        this._rank.textColor = 16768589;
+      this._rank.textColor = 16768589;
+
+      if(previous) { // If favorite - make it alt
+        this._name.textColor = 4278255615;
+        abi.alts[this.uid] = true;
         abi.favs[this.uid] = null;
         this.friends.onFavoriteRemove(this);
-      } else {
+        this.friends.onAltAdd(this);
+      } else if(abi.alts[this.uid]) { // If alt - make it default
+        this.btnHeart.toggled = false;
+        this._name.textColor = 16250871;
+        abi.alts[this.uid] = null;
+        abi.favs[this.uid] = null;
+        this.friends.onAltRemove(this);
+      } else { // If default - make it favorite
         this.btnHeart.toggled = true;
         this._name.textColor = 16201328;
         this._rank.textColor = 16250871;

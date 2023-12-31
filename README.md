@@ -19,6 +19,7 @@ If you have any bug or suggestion, please [create an issue](https://github.com/C
 ## Features
 - Better looking
 - Favorite friends
+- Alt account list (you need to click twice on favorite button to make it an alt account)
 - Quick invite list
 - Ship list (cleaners and leechers)
 
