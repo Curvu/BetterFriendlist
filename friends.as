@@ -57,6 +57,16 @@ package {
     public var list_leechers:Array = [];
     public var list_alts:Array = [];
 
+    // Array of letters
+    private var keyboard:Sprite;
+
+    public var characters:Array = ["1","2","3","4","5","6","7","8","9","0",
+                                  "Q","W","E","R","T","Y","U","I","O","P",
+                                  "A","S","D","F","G","H","J","K","L","_",
+                                  "Z","X","C","V","B","N","M"];
+
+    public var filter:String = "";
+
     public function Friends() {
       super();
       this.lookup = {};
@@ -328,6 +338,24 @@ package {
       var temp_text:TextField = renderer.text(367,3,TEXT_FORMAT_ONLINE,"left",true,"");
       temp_text.htmlText = "<b>LEFT-CLICK</b> player to <b>Whisper\nRIGHT-CLICK</b> player to <b>Remove</b>";
       this.help_area.addChild(temp_text);
+
+      this.keyboard = renderer.rectangle(new Sprite(), 365, -1, 3 * 60, 75, 855319, 1);
+      var key:txtbtn = null;
+      var idx:int = 0;
+      while(idx < this.characters.length) {
+        key = new txtbtn(14, 13, this.characters[idx], 0, 0);
+        key.x = idx % 10 * 18 + 367;
+        key.y = int(idx / 10) * 18 + 3;
+        key.addEventListener(MouseEvent.CLICK, this.onClickKey);
+        this.keyboard.addChild(key);
+        idx++;
+      }
+
+      key = new txtbtn(14*3, 13, "DEL", 0, 0);
+      key.x = 7 * 18 + 367;
+      key.y = 3 * 18 + 3;
+      key.addEventListener(MouseEvent.CLICK, this.deleteKey);
+      this.keyboard.addChild(key);
     }
 
     private function buildTabButtons() : void {
@@ -360,6 +388,7 @@ package {
       var all:Array = [
         new txtbtn(235,13,ADD_FRIEND,1,30),
         new txtbtn(14,13,"?",237,30),
+        new txtbtn(14,13,"S",252,30),
         renderer.text(268,28,TEXT_FORMAT_HEADERS,"left",true,abi.msg.INVITE),
         renderer.text(316,28,TEXT_FORMAT_HEADERS,"left",true,abi.msg.JOIN)
       ];
@@ -406,9 +435,10 @@ package {
       ];
       this.header_items[TAB_SHIP] = ship;
 
-      this.header_items[TAB_ALL][0].addEventListener(MouseEvent.CLICK,this.onAdd);
-      this.header_items[TAB_ALL][1].addEventListener(MouseEvent.MOUSE_OVER,this.onHelpMouseOver);
-      this.header_items[TAB_ALL][1].addEventListener(MouseEvent.MOUSE_OUT,this.onHelpMouseOut);
+      this.header_items[TAB_ALL][0].addEventListener(MouseEvent.CLICK, this.onAdd);
+      this.header_items[TAB_ALL][1].addEventListener(MouseEvent.MOUSE_OVER, this.onHelpMouseOver);
+      this.header_items[TAB_ALL][1].addEventListener(MouseEvent.MOUSE_OUT, this.onHelpMouseOut);
+      this.header_items[TAB_ALL][2].addEventListener(MouseEvent.CLICK, this.onKeyboard);
 
       this.header_items[TAB_ALTS][1].addClickListener(this.onInviteAltsList);
 
@@ -418,7 +448,7 @@ package {
 
       this.header_items[TAB_REQUEST][1].addClickListener(this.onAcceptAll);
       this.header_items[TAB_REQUEST][1].count = 0;
-      this.header_items[TAB_IGNORED][1].addEventListener(MouseEvent.CLICK,this.onAdd);
+      this.header_items[TAB_IGNORED][1].addEventListener(MouseEvent.CLICK, this.onAdd);
 
       this.header_items[TAB_SHIP][1].addClickListener(this.onClearShipList);
       this.header_items[TAB_SHIP][2].addClickListener(this.onInviteShipList);
@@ -432,6 +462,39 @@ package {
 
     private function onHelpMouseOut() : void {
       if(this.help_area.stage) this.header_section.removeChild(this.help_area);
+    }
+
+    private function onKeyboard() : void {
+      if(!this.keyboard.stage) this.header_section.addChild(this.keyboard);
+      else this.header_section.removeChild(this.keyboard);
+    }
+
+    private function filterFriends() : void {
+      this.list_fav.sortOn(["is_online", "name"], [Array.DESCENDING, Array.CASEINSENSITIVE]);
+      this.list_default.sortOn(["is_online", "name"], [Array.DESCENDING, Array.CASEINSENSITIVE]);
+      var list_all:Array = this.list_fav.concat(this.list_default);
+
+      var filteredList:Array = [];
+      for each (var f:Friend in list_all) {
+        if (f.name.toLowerCase().indexOf(this.filter.toLowerCase()) != -1 || this.filter == "") {
+          filteredList.push(f);
+        }
+      }
+
+      this.render_list = filteredList;
+      this.setupRows();
+      this.updateContainerSize();
+    }
+
+    public function onClickKey(e:MouseEvent) : void {
+      this.filter += e.currentTarget.text;
+      filterFriends();
+    }
+
+    private function deleteKey() : void {
+      if (this.filter == "") return;
+      this.filter = filter.substr(0, this.filter.length - 1);
+      filterFriends();
     }
 
     /* ---------------- */
