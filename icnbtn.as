@@ -4,9 +4,7 @@ package {
   import flash.external.ExternalInterface;
   import flash.geom.ColorTransform;
 
-  public class abbtn extends Sprite {
-    public static const ENV:Boolean = abi.DEBUG > 2;
-
+  public class icnbtn extends Sprite {
     public static const COLOR_IDLE:ColorTransform = new ColorTransform(1,1,1,0.2,129,143,178);
 
     public static const COLOR_HOVER:ColorTransform = new ColorTransform(1,1,1,0.5,129,143,178);
@@ -23,7 +21,7 @@ package {
 
     private var _disabled:Boolean = false;
 
-    public function abbtn(icon:*, w:int = 24, h:int = 24) {
+    public function icnbtn(icon:*, w:int = 24, h:int = 24) {
       super();
       renderer.rectangle(this,0,0,w,h,0,0);
       if(icon) {
@@ -38,7 +36,6 @@ package {
       }
       this.addMouseEventListeners();
       this.transform.colorTransform = COLOR_IDLE;
-      if(ENV) renderer.outline(this,0,0,w,h,16711935,1);
     }
 
     public function get disabled() : Boolean {

@@ -13,8 +13,8 @@ package {
     public static const TEXT_FORMAT_ONLINE:TextFormat = new TextFormat("Open Sans",11,16250871,false,false,false,false,false,"right");
     public static const TEXT_FORMAT_REQUESTS:TextFormat = new TextFormat("Open Sans",10,16201328,true);
     public static const TEXT_FORMAT_HEADERS:TextFormat = new TextFormat("Open Sans",9,4738417,false);
-    public static const FRIENDS_ONLINE:String = abi.msg.FRIENDS + " " + abi.msg.ONLINE;
-    public static const ADD_FRIEND:* = abi.msg.ADD + " " + abi.msg.FRIEND.toUpperCase();
+    public static const FRIENDS_ONLINE:String = config.msg.FRIENDS + " " + config.msg.ONLINE;
+    public static const ADD_FRIEND:* = config.msg.ADD + " " + config.msg.FRIEND.toUpperCase();
 
     private var _init:Boolean = false;
     public var container:Sprite;
@@ -66,17 +66,25 @@ package {
                                   "Z","X","C","V","B","N","M"];
 
     public var filter:String = "";
+    public var filter_text:TextField;
 
     public function Friends() {
       super();
       this.lookup = {};
       this.buildContainer();
-      this.tab = abi.cfg.default_tab;
+      this.tab = config.cfg.default_tab;
     }
 
     public function set tab(tab:int) : void {
       var items:Array = null;
       var idx:int = 0;
+
+      if(tab != TAB_ALL) {
+        if(this.keyboard.stage) this.header_section.removeChild(this.keyboard);
+        this.filter = "";
+        this.filter_text.text = "";
+      }
+
       if(tab > TAB_IGNORED) tab = int(TAB_ALL);
       if(tab != this._tab || !this._init) {
         this.header_btns[this._tab].toggled = false;
@@ -102,8 +110,8 @@ package {
         }
 
         if(TAB_ALL <= tab && tab <= TAB_REQUEST && this._init) {
-          abi.cfg.default_tab = tab;
-          abi.configWrite("default_tab");
+          config.cfg.default_tab = tab;
+          config.configWrite("default_tab");
         }
         this._tab = tab;
         this.onSortTimerComplete();
@@ -139,29 +147,29 @@ package {
 
     public function add(uid:String, name:String, is_online:Boolean = false, world:String = "", rank:String = "", can_join:Boolean = false, is_request:Boolean = false, can_accept:Boolean = false, can_invite:Boolean = false, team_pvp_enabled:Boolean = false, is_ignored:Boolean = false, highlight:Boolean = false) : void {
       if(this.lookup[uid]) return this.update(uid,name,is_online,world,rank,can_join,is_request,can_accept,can_invite,team_pvp_enabled,is_ignored,highlight);
-      if(name == "" && abi.cfg.drop_nameless) return;
+      if(name == "" && config.cfg.drop_nameless) return;
 
       var friend:Friend = new Friend(uid,name,is_online,world,rank,can_join,is_request,can_accept,can_invite,team_pvp_enabled,is_ignored,highlight,this);
       this.lookup[friend.uid] = friend;
       this.list.push(friend);
 
-      if(abi.favs[friend.uid]) this.list_fav.push(friend);
-      else if(abi.alts[friend.uid]) this.list_alts.push(friend);
+      if(config.favs[friend.uid]) this.list_fav.push(friend);
+      else if(config.alts[friend.uid]) this.list_alts.push(friend);
       else if(friend.is_request) this.list_request.push(friend);
       else if(friend.is_ignored) this.list_ignored.push(friend);
       else this.list_default.push(friend);
 
-      if(abi.quick[friend.uid]) {
+      if(config.quick[friend.uid]) {
         this.list_quick.push(friend);
         this.header_items[TAB_QUICK][2].count++;
       }
 
-      if(abi.leechers[friend.uid]) {
+      if(config.leechers[friend.uid]) {
         this.list_leechers.push(friend);
         this.leechers_count++;
       }
 
-      if(abi.cleaners[friend.uid]) {
+      if(config.cleaners[friend.uid]) {
         this.list_cleaners.push(friend);
         this.cleaners_count++;
       }
@@ -208,9 +216,9 @@ package {
 
       this.list.splice(idx,1);
       if(f.is_online) {
-        if(abi.quick[f.uid]) this.header_items[TAB_QUICK][2].count--;
-        if(abi.leechers[f.uid]) this.leechers_count--;
-        if(abi.cleaners[f.uid]) this.cleaners_count--;
+        if(config.quick[f.uid]) this.header_items[TAB_QUICK][2].count--;
+        if(config.leechers[f.uid]) this.leechers_count--;
+        if(config.cleaners[f.uid]) this.cleaners_count--;
         --this.online;
       } else if(f.is_request && f.can_accept) {
         --this.requests;
@@ -292,7 +300,7 @@ package {
     private function buildContainer() : void {
       this.full_list = renderer.rectangle(new Sprite(),0,0,364,42,986907,1);
       this.full_list.x = 5;
-      this.full_list.y = 150 + abi.cfg.vertical_offset;
+      this.full_list.y = 150 + config.cfg.vertical_offset;
       this.container = new Sprite();
       this.container.x = 1;
       this.container.y = 1;
@@ -339,34 +347,44 @@ package {
       temp_text.htmlText = "<b>LEFT-CLICK</b> player to <b>Whisper\nRIGHT-CLICK</b> player to <b>Remove</b>";
       this.help_area.addChild(temp_text);
 
-      this.keyboard = renderer.rectangle(new Sprite(), 365, -1, 3 * 60, 75, 855319, 1);
-      var key:txtbtn = null;
+      // Setup keyboard
+      this.keyboard = renderer.rectangle(new Sprite(), 365, -1, 202, 104, renderer.GRAY_30, 1);
+
+      // Add text to see what you're typing
+      filter_text = renderer.text(367, 3, TEXT_FORMAT_ONLINE, "left", true, "");
+      filter_text.width = 200;
+      filter_text.height = 20;
+      filter_text.textColor = renderer.WHITE;
+      this.keyboard.addChild(filter_text);
+
+      // Add keys
+      var key:KeyboardBtn = null;
       var idx:int = 0;
       while(idx < this.characters.length) {
-        key = new txtbtn(14, 13, this.characters[idx], 0, 0);
-        key.x = idx % 10 * 18 + 367;
-        key.y = int(idx / 10) * 18 + 3;
+        key = new KeyboardBtn(18, 18, this.characters[idx], 0, 0);
+        key.x = idx % 10 * 20 + 367;
+        key.y = (int(idx / 10)+1) * 20 + 3;
         key.addEventListener(MouseEvent.CLICK, this.onClickKey);
         this.keyboard.addChild(key);
         idx++;
       }
 
-      key = new txtbtn(14*3, 13, "DEL", 0, 0);
-      key.x = 7 * 18 + 367;
-      key.y = 3 * 18 + 3;
+      key = new KeyboardBtn(58, 18, "DEL", 0, 0);
+      key.x = 7 * 20 + 367;
+      key.y = 4 * 20 + 3;
       key.addEventListener(MouseEvent.CLICK, this.deleteKey);
       this.keyboard.addChild(key);
     }
 
     private function buildTabButtons() : void {
       this.header_btns = [
-        new abbtn(abi.scale(new IconFriends(), 0.75), 24, 24),
-        new abbtn(abi.scale(new IconHeart(), 0.75), 24, 24),
-        new abbtn(abi.scale(new IconAlts(), 0.75), 24, 24),
-        new abbtn(abi.scale(new IconQuickList(), 0.75), 24, 24),
-        new abbtn(abi.scale(new IconShip(), 0.75), 24, 24),
-        new abbtn(abi.scale(new IconRequest(), 0.75), 24, 24),
-        new abbtn(abi.scale(new IconIgnore(), 0.75), 24, 24)
+        new icnbtn(config.scale(new IconFriends(), 0.75), 24, 24),
+        new icnbtn(config.scale(new IconHeart(), 0.75), 24, 24),
+        new icnbtn(config.scale(new IconAlts(), 0.75), 24, 24),
+        new icnbtn(config.scale(new IconQuickList(), 0.75), 24, 24),
+        new icnbtn(config.scale(new IconShip(), 0.75), 24, 24),
+        new icnbtn(config.scale(new IconRequest(), 0.75), 24, 24),
+        new icnbtn(config.scale(new IconIgnore(), 0.75), 24, 24)
       ];
 
       for (var i:int = 0; i < this.header_btns.length; i++) {
@@ -389,15 +407,15 @@ package {
         new txtbtn(235,13,ADD_FRIEND,1,30),
         new txtbtn(14,13,"?",237,30),
         new txtbtn(14,13,"S",252,30),
-        renderer.text(268,28,TEXT_FORMAT_HEADERS,"left",true,abi.msg.INVITE),
-        renderer.text(316,28,TEXT_FORMAT_HEADERS,"left",true,abi.msg.JOIN)
+        renderer.text(268,28,TEXT_FORMAT_HEADERS,"left",true,config.msg.INVITE),
+        renderer.text(316,28,TEXT_FORMAT_HEADERS,"left",true,config.msg.JOIN)
       ];
       this.header_items[TAB_ALL] = all;
 
       var fav:Array = [
         renderer.text(1,28,TEXT_FORMAT_HEADERS,"left",true,"FAVORITES"),
-        renderer.text(268,28,TEXT_FORMAT_HEADERS,"left",true,abi.msg.INVITE),
-        renderer.text(316,28,TEXT_FORMAT_HEADERS,"left",true,abi.msg.JOIN)
+        renderer.text(268,28,TEXT_FORMAT_HEADERS,"left",true,config.msg.INVITE),
+        renderer.text(316,28,TEXT_FORMAT_HEADERS,"left",true,config.msg.JOIN)
       ];
       this.header_items[TAB_FAV] = fav;
 
@@ -488,12 +506,14 @@ package {
 
     public function onClickKey(e:MouseEvent) : void {
       this.filter += e.currentTarget.text;
+      this.filter_text.text = this.filter;
       filterFriends();
     }
 
     private function deleteKey() : void {
       if (this.filter == "") return;
       this.filter = filter.substr(0, this.filter.length - 1);
+      this.filter_text.text = this.filter;
       filterFriends();
     }
 
@@ -511,7 +531,7 @@ package {
 
     private function onClearQuickList() : void {
       while(0 < this.list_quick.length) this.list_quick[0].onQuickList();
-      abi.configWrite("quick_list");
+      config.configWrite("quick_list");
       this.header_items[TAB_QUICK][2].count = 0;
     }
 
@@ -531,8 +551,8 @@ package {
     private function onClearShipList() : void {
       while(0 < this.list_leechers.length) this.list_leechers[0].onLeech();
       while(0 < this.list_cleaners.length) this.list_cleaners[0].onClean();
-      abi.configWrite("list_leechers");
-      abi.configWrite("list_cleaners");
+      config.configWrite("list_leechers");
+      config.configWrite("list_cleaners");
       this.leechers_count = 0;
       this.cleaners_count = 0;
     }
@@ -629,23 +649,23 @@ package {
       this.scroll.zone.addEventListener(MouseEvent.MOUSE_MOVE,this.onMouseMove);
       this.scroll.bar.addEventListener(MouseEvent.MOUSE_DOWN,this.setScrollBarListener);
       this.scroll.bar.addEventListener(MouseEvent.MOUSE_UP,this.removeScrollBarListener);
-      abi.M.parent.addEventListener(MouseEvent.MOUSE_WHEEL,this.onMouseWheel);
+      config.M.parent.addEventListener(MouseEvent.MOUSE_WHEEL,this.onMouseWheel);
     }
 
     private function onMouseWheel(e:MouseEvent) : void {
       var percent:Number = NaN;
-      var temp:Point = new Point(this.full_list.x,this.full_list.y - 147 - abi.cfg.vertical_offset);
+      var temp:Point = new Point(this.full_list.x,this.full_list.y - 147 - config.cfg.vertical_offset);
       var min:Point = this.full_list.localToGlobal(temp);
       temp.x += this.header_section.width - 7;
       temp.y += this.scroll.bar.height;
       var max:Point = this.full_list.localToGlobal(temp);
 
-      if(!this.scroll.bar.stage || !abi.within(min.x,e.stageX,max.x) || !abi.within(min.y,e.stageY,max.y)) return;
+      if(!this.scroll.bar.stage || !config.within(min.x,e.stageX,max.x) || !config.within(min.y,e.stageY,max.y)) return;
 
       if(!this.scroll.zone.stage) {
-        this.container.y = abi.clamp(this.container.y + 40 * (e.delta > 0 ? 1 : -1),-(Math.max(this.render_list.length * 40,1) - abi.cfg.max_rows * 40),1);
-        percent = this.container.y / -(this.render_list.length * 40 - abi.cfg.max_rows * 40);
-        this.scroll.scrubber.y = abi.clamp(int((this.scroll.bar.height - this.scroll.scrubber.height) * percent + 0.5),0,this.scroll.bar.height - this.scroll.scrubber.height);
+        this.container.y = config.clamp(this.container.y + 40 * (e.delta > 0 ? 1 : -1),-(Math.max(this.render_list.length * 40,1) - config.cfg.max_rows * 40),1);
+        percent = this.container.y / -(this.render_list.length * 40 - config.cfg.max_rows * 40);
+        this.scroll.scrubber.y = config.clamp(int((this.scroll.bar.height - this.scroll.scrubber.height) * percent + 0.5),0,this.scroll.bar.height - this.scroll.scrubber.height);
         this.setupRows();
       }
     }
@@ -667,7 +687,7 @@ package {
       var realY:int = e.localY - 400 + this.scroll.offset;
       this.scroll.scrubber.y = Math.max(0,Math.min(this.scroll.bar.height - this.scroll.scrubber.height - 800,realY - int(this.scroll.scrubber.height / 2)));
       var percent:Number = this.getScrollPercent();
-      this.container.y = 1 - int(percent * (Math.max(this.render_list.length * 40,1) - abi.cfg.max_rows * 40) + 0.5);
+      this.container.y = 1 - int(percent * (Math.max(this.render_list.length * 40,1) - config.cfg.max_rows * 40) + 0.5);
       this.setupRows();
     }
 
@@ -678,18 +698,18 @@ package {
 
     private function updateContainerSize() : void {
       this.full_list.visible = true;
-      var h:int = Math.min(abi.cfg.max_rows * 40 - 3,this.render_list.length * 40 - 3);
+      var h:int = Math.min(config.cfg.max_rows * 40 - 3,this.render_list.length * 40 - 3);
       var w:int = 357;
       this.scroll.scrubber.graphics.clear();
       this.scroll.bar.graphics.clear();
       this.scroll.zone.graphics.clear();
       this.header_section.graphics.clear();
 
-      if(this.render_list.length > abi.cfg.max_rows) {
+      if(this.render_list.length > config.cfg.max_rows) {
         if(!this.scroll.bar.stage) this.full_list.addChild(this.scroll.bar);
 
-        renderer.rectangle(this.scroll.scrubber,0,0,6,abi.getScrubberSize(this.render_list.length,24),this.scroll.color[0],1);
-        renderer.rectangle(this.scroll.scrubber,1,1,4,abi.getScrubberSize(this.render_list.length,24) - 2,this.scroll.color[1],1);
+        renderer.rectangle(this.scroll.scrubber,0,0,6,config.getScrubberSize(this.render_list.length,24),this.scroll.color[0],1);
+        renderer.rectangle(this.scroll.scrubber,1,1,4,config.getScrubberSize(this.render_list.length,24) - 2,this.scroll.color[1],1);
         renderer.rectangle(this.scroll.bar,0,0,6,h,986907,1);
         renderer.rectangle(this.scroll.zone,0,0,1600,h + 800,16711935,0);
         w = 364;
@@ -735,8 +755,8 @@ package {
 
     private function setupRows() : void {
       var rdx:int = 0;
-      var spana:int = abi.cfg.max_rows + 2;
-      var spanb:int = int((abi.cfg.max_rows + 5) * 40 + 0.5);
+      var spana:int = config.cfg.max_rows + 2;
+      var spanb:int = int((config.cfg.max_rows + 5) * 40 + 0.5);
       var f:Friend = null;
       var idx:int = 0;
       var pos:int = Math.max(0,int(this.render_list.length * this.getScrollPercent() + 0.5));
@@ -749,12 +769,12 @@ package {
         f = this.list[idx];
         rdx = this.render_list.indexOf(f);
         if(rdx != -1) {
-          if(abi.within(mina,rdx,maxa)) {
+          if(config.within(mina,rdx,maxa)) {
             if(!f.row.stage) this.container.addChild(f.row);
             f.row.y = rdx * 40;
             f.bg.visible = rdx % 2 != 0;
           } else if(f.seen && f.row.stage) this.container.removeChild(f.row);
-        } else if(f.seen && (f.row.stage && abi.within(minb,f.row.y,maxb))) this.container.removeChild(f.row);
+        } else if(f.seen && (f.row.stage && config.within(minb,f.row.y,maxb))) this.container.removeChild(f.row);
         idx++;
       }
     }
@@ -770,6 +790,7 @@ package {
       this.updateRenderList();
       this.setupRows();
       this.updateContainerSize();
+      if (this.filter != "")  this.filterFriends();
     }
 
     /* ---------------- */
@@ -783,7 +804,7 @@ package {
       if(idx != -1) this.list_default.splice(idx, 1);
 
       this.onSortTimerComplete();
-      abi.configWrite("favorites");
+      config.configWrite("favorites");
     }
 
     public function onFavoriteRemove(f:Friend) : void {
@@ -793,7 +814,7 @@ package {
         this.list_default.push(f);
         this.onSortTimerComplete();
       }
-      abi.configWrite("favorites");
+      config.configWrite("favorites");
     }
 
     public function onAltAdd(f:Friend) : void {
@@ -802,8 +823,8 @@ package {
       var idx:int = this.list_default.indexOf(f);
       if(idx != -1) this.list_default.splice(idx, 1);
 
-      this.onSortTimerComplete();
-      abi.configWrite("alts");
+      config.configWrite("alts");
+      if (this.filter == "") this.onSortTimerComplete();
     }
 
     public function onAltRemove(f:Friend) : void {
@@ -813,7 +834,7 @@ package {
         this.list_default.push(f);
         this.onSortTimerComplete();
       }
-      abi.configWrite("alts");
+      config.configWrite("alts");
     }
 
     public function onQuickListAdd(f:Friend) : void {
@@ -821,7 +842,7 @@ package {
         this.list_quick.push(f);
         this.header_items[TAB_QUICK][2].count++;
       }
-      abi.configWrite("quick_list");
+      config.configWrite("quick_list");
     }
 
     public function onQuickListRemove(f:Friend, is_internal:Boolean = false) : void {
@@ -831,15 +852,16 @@ package {
         this.header_items[TAB_QUICK][2].count--;
       }
       if(this.tab == TAB_QUICK) this.onSortTimerComplete();
-      if(is_internal) abi.configWrite("quick_list");
+      if(is_internal) config.configWrite("quick_list");
     }
 
     public function onLeecherAdd(f:Friend) : void {
       if(this.list_leechers.indexOf(f) == -1 && this.list_cleaners.indexOf(f) == -1) {
         this.list_leechers.push(f);
         this.leechers_count++;
-        abi.configWrite("list_leechers");
+        config.configWrite("list_leechers");
       }
+      if (this.tab == TAB_SHIP) this.onSortTimerComplete();
     }
 
     public function onLeecherRemove(f:Friend) : void {
@@ -847,17 +869,18 @@ package {
       if(idx != -1) {
         this.list_leechers.splice(idx, 1);
         this.leechers_count--;
-        abi.configWrite("list_leechers");
-        this.onSortTimerComplete();
+        config.configWrite("list_leechers");
       }
+      if (this.tab == TAB_SHIP) this.onSortTimerComplete();
     }
 
     public function onCleanerAdd(f:Friend) : void {
       if(this.list_cleaners.indexOf(f) == -1 && this.list_leechers.indexOf(f) == -1) {
         this.list_cleaners.push(f);
         this.cleaners_count++;
-        abi.configWrite("list_cleaners");
+        config.configWrite("list_cleaners");
       }
+      if (this.tab == TAB_SHIP) this.onSortTimerComplete();
     }
 
     public function onCleanerRemove(f:Friend) : void {
@@ -865,9 +888,9 @@ package {
       if(idx != -1) {
         this.list_cleaners.splice(idx, 1);
         this.cleaners_count--;
-        abi.configWrite("list_cleaners");
-        this.onSortTimerComplete();
+        config.configWrite("list_cleaners");
       }
+      if (this.tab == TAB_SHIP) this.onSortTimerComplete();
     }
   }
 }

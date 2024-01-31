@@ -1,10 +1,9 @@
 package {
   import flash.external.ExternalInterface;
 
-  public class abi {
-    public static const MOD_NAME:String = "ayu-friends";
+  public class config {
+    public static const MOD_NAME:String = "BetterFriendlist";
     public static const FILE_NAME:String = "friendslist.swf";
-    public static const DEBUG:int = 0;
 
     public static var M:*;
 
@@ -51,7 +50,7 @@ package {
     public static var cleaners:Object = {};
     public static var leechers:Object = {};
 
-    public function abi() {
+    public function config() {
       super();
     }
 
@@ -164,8 +163,8 @@ package {
     }
 
     public static function getScrubberSize(num_friends:int, min_size:int) : int {
-      var max_size:int = abi.cfg.max_rows * 40;
-      if(num_friends <= abi.cfg.max_rows) return max_size;
+      var max_size:int = config.cfg.max_rows * 40;
+      if(num_friends <= config.cfg.max_rows) return max_size;
       return int(Math.max(min_size,Math.min(max_size,max_size - easeOutCirc(num_friends / 700) * max_size)));
     }
 
