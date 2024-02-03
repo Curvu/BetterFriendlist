@@ -24,13 +24,12 @@ package {
     private var sort_timer:Timer;
     public var _requests:TextField;
     public var full_list:Sprite;
-    private var _online:TextField;
     private var num_online:int = 0;
     private var _tab:int = 0;
     public var lookup:Object;
 
-    public var leechers_count:int = 0;
-    public var cleaners_count:int = 0;
+    private var _online:TextField;
+    private var circle:Shape;
 
     public var header_btns:Array = [];
     public var header_items:Array = [];
@@ -57,7 +56,7 @@ package {
     public var list_leechers:Array = [];
     public var list_alts:Array = [];
 
-    // Array of letters
+    // Keyboard
     private var keyboard:Sprite;
 
     public var characters:Array = ["1","2","3","4","5","6","7","8","9","0",
@@ -124,10 +123,13 @@ package {
     }
 
     public function set online(num:int) : void {
-      if(tab == TAB_SHIP) {
-        this._online.htmlText = "<font color=\"#CECED7\" size=\"9\">" + this.leechers_count + " LEECHES / " + this.cleaners_count + " CLEANERS</font>";
-      } else if(this.tab != TAB_IGNORED) {
-        this._online.htmlText = "<b>" + num + "</b><font color=\"#CECED7\">/" + (this.list.length - this.list_request.length - this.list_ignored.length) + "</font> " + FRIENDS_ONLINE;
+      if(!this.circle.stage) this.header_section.addChild(this.circle);
+
+      if(this.tab == TAB_ALL) {
+        this._online.htmlText = "<b>" + num + "</b><font color=\"#CECED7\">/" + (this.list.length - this.list_request.length - this.list_ignored.length) + "</font> ";
+      } else {
+        this._online.htmlText = "";
+        if(this.circle.stage) this.header_section.removeChild(this.circle);
       }
 
       this.num_online = num;
@@ -166,12 +168,12 @@ package {
 
       if(config.leechers[friend.uid]) {
         this.list_leechers.push(friend);
-        this.leechers_count++;
+        this.header_items[TAB_SHIP][4].count++;
       }
 
       if(config.cleaners[friend.uid]) {
         this.list_cleaners.push(friend);
-        this.cleaners_count++;
+        this.header_items[TAB_SHIP][3].count++;
       }
 
       if(is_online) ++this.online;
@@ -217,8 +219,8 @@ package {
       this.list.splice(idx,1);
       if(f.is_online) {
         if(config.quick[f.uid]) this.header_items[TAB_QUICK][2].count--;
-        if(config.leechers[f.uid]) this.leechers_count--;
-        if(config.cleaners[f.uid]) this.cleaners_count--;
+        if(config.cleaners[f.uid]) this.header_items[TAB_SHIP][3];
+        if(config.leechers[f.uid]) this.header_items[TAB_SHIP][4]
         --this.online;
       } else if(f.is_request && f.can_accept) {
         --this.requests;
@@ -276,8 +278,8 @@ package {
       this.online = 0;
       this.header_items[TAB_QUICK][2].count = 0;
       this.header_items[TAB_REQUEST][1].count = 0;
-      this.leechers_count = 0;
-      this.cleaners_count = 0;
+      this.header_items[TAB_SHIP][3].count = 0;
+      this.header_items[TAB_SHIP][4].count = 0;
       this.requests = 0;
       this.lookup = {};
     }
@@ -298,19 +300,23 @@ package {
     }
 
     private function buildContainer() : void {
-      this.full_list = renderer.rectangle(new Sprite(),0,0,364,42,986907,1);
+      this.full_list = renderer.rectangle(new Sprite(), 0, 0, 364, 42, renderer.GRAY_16, 1);
       this.full_list.x = 5;
       this.full_list.y = 150 + config.cfg.vertical_offset;
+
       this.container = new Sprite();
       this.container.x = 1;
       this.container.y = 1;
-      renderer.rectangle(this.full_list,1,1,355,40,1776433,1);
-      this.clipping_mask = renderer.rectangle(new Sprite(),0,0,355,1,16711935,1);
+
+      renderer.rectangle(this.full_list, 1, 1, 355, 40, renderer.GRAY_22, 1);
+      this.clipping_mask = renderer.rectangle(new Sprite(), 0, 0, 355, 1, 16711935, 1);
       this.clipping_mask.x = 1;
       this.clipping_mask.y = 1;
       this.container.mask = this.clipping_mask;
+
       this.buildScrollbar();
       this.buildHeaderSection();
+
       this.full_list.addChild(this.scroll.bar);
       this.full_list.addChild(this.container);
       this.full_list.addChild(this.clipping_mask);
@@ -327,24 +333,37 @@ package {
     }
 
     private function buildHeaderSection() : void {
-      this.header_section = renderer.rectangle(new Sprite(),0,-1,357,45,986907,1);
-      renderer.rectangle(this.header_section,0,29,357,15,855319,1);
+      this.header_section = renderer.rectangle(new Sprite(), 0, -1, 357, 45, renderer.GRAY_22, 1);
+      renderer.rectangle(this.header_section, 0, 29, 357, 15, renderer.GRAY_16, 1);
+
       this.header_section.y = -43;
-      this._online = renderer.text(0,0,TEXT_FORMAT_ONLINE,"",true,"0 / 0 Friends Online");
-      this._online.width = 355;
-      this._online.y = 4;
-      this._online.height = 16;
+
+      // Add a green circle to the left of the header
+      this.circle = new Shape();
+      renderer.circle(this.circle, 300, 15, 3, renderer.GREEN, 1);
+      this.circle.y = -1;
+      this.header_section.addChild(this.circle);
+
+      this._online = renderer.text(305, 4, TEXT_FORMAT_ONLINE, "left", true, "0 / 0");
+      this._online.width = 50;
       this.header_section.addChild(this._online);
+
       this.buildTabButtons();
       this.buildHeaderItems();
-      this._requests = renderer.text(0,0,TEXT_FORMAT_REQUESTS,"",true,"");
-      this._requests.x = 147;
+
+      this._requests = renderer.text(0, 0, TEXT_FORMAT_REQUESTS, "", true, "");
+      this._requests.x = 180;
       this._requests.y = -1;
       this.header_section.addChild(this._requests);
-      this.help_area = renderer.rectangle(new Sprite(),365,-1,3 * 60,45,855319,1);
-      this.help_area = renderer.rectangle(this.help_area,366,0,178,43,986907,1);
-      var temp_text:TextField = renderer.text(367,3,TEXT_FORMAT_ONLINE,"left",true,"");
-      temp_text.htmlText = "<b>LEFT-CLICK</b> player to <b>Whisper\nRIGHT-CLICK</b> player to <b>Remove</b>";
+
+      this.help_area = renderer.rectangle(new Sprite(), 366, 0, 200, 43, renderer.GRAY_30, 1);
+      var temp_text:TextField = renderer.text(367, 3, TEXT_FORMAT_ONLINE, "left", true, "");
+      temp_text.htmlText = "<b>LEFT-CLICK</b> player to Whisper";
+      temp_text.textColor = renderer.WHITE;
+      this.help_area.addChild(temp_text);
+
+      temp_text = renderer.text(367, 20, TEXT_FORMAT_ONLINE, "left", true, "");
+      temp_text.htmlText = "<b>RIGHT-CLICK</b> player for more options";
       this.help_area.addChild(temp_text);
 
       // Setup keyboard
@@ -404,75 +423,93 @@ package {
 
     private function buildHeaderItems() : void {
       var all:Array = [
-        new txtbtn(235,13,ADD_FRIEND,1,30),
-        new txtbtn(14,13,"?",237,30),
-        new txtbtn(14,13,"S",252,30),
-        renderer.text(268,28,TEXT_FORMAT_HEADERS,"left",true,config.msg.INVITE),
-        renderer.text(316,28,TEXT_FORMAT_HEADERS,"left",true,config.msg.JOIN)
+        new KeyboardBtn(145, 13, ADD_FRIEND, 1, 30, true),
+        new KeyboardBtn(50, 13, "SEARCH", 147, 30, true),
+        new KeyboardBtn(14, 13, "?", 198, 30, true),
+        renderer.text(268, 28, TEXT_FORMAT_HEADERS, "left", true, config.msg.INVITE),
+        renderer.text(316, 28, TEXT_FORMAT_HEADERS, "left", true, config.msg.JOIN)
       ];
       this.header_items[TAB_ALL] = all;
 
       var fav:Array = [
         renderer.text(1,28,TEXT_FORMAT_HEADERS,"left",true,"FAVORITES"),
-        renderer.text(268,28,TEXT_FORMAT_HEADERS,"left",true,config.msg.INVITE),
-        renderer.text(316,28,TEXT_FORMAT_HEADERS,"left",true,config.msg.JOIN)
+        renderer.text(268, 28, TEXT_FORMAT_HEADERS, "left", true, config.msg.INVITE),
+        renderer.text(316, 28, TEXT_FORMAT_HEADERS, "left", true, config.msg.JOIN)
       ];
       this.header_items[TAB_FAV] = fav;
 
       var alts:Array = [
         renderer.text(1,28,TEXT_FORMAT_HEADERS,"left",true,"ALTS"),
-        new txtbtn(93, 13, "INVITE ALL", 263, 30)
+        new KeyboardBtn(93, 13, "INVITE ALL", 263, 30, true)
       ];
       this.header_items[TAB_ALTS] = alts;
 
       var quick:Array = [
-        renderer.text(1,28,TEXT_FORMAT_HEADERS,"left",true,"QUICK LIST"),
-        new txtbtn(14,13,"x",248,30),
-        new txtbtn(93,13,"INVITE ALL",263,30)
+        renderer.text(1, 28, TEXT_FORMAT_HEADERS, "left", true, "QUICK LIST"),
+        new KeyboardBtn(14, 13, "x", 248, 30, true),
+        new KeyboardBtn(93, 13, "INVITE ALL", 263, 30, true)
       ];
       this.header_items[TAB_QUICK] = quick;
 
       var request:Array = [
-        renderer.text(1,28,TEXT_FORMAT_HEADERS,"left",true,"FRIEND REQUESTS"),
-        new txtbtn(93,13,"ACCEPT ALL",263,30)
+        renderer.text(1, 28, TEXT_FORMAT_HEADERS, "left", true, "FRIEND REQUESTS"),
+        new KeyboardBtn(93, 13, "ACCEPT ALL", 263, 30, true)
       ];
       this.header_items[TAB_REQUEST] = request;
 
       var ignored:Array = [
-        renderer.text(1,28,TEXT_FORMAT_HEADERS,"left",true,"IGNORED PLAYERS"),
-        new txtbtn(93,13,"ADD IGNORED",263,30)
+        renderer.text(1, 28, TEXT_FORMAT_HEADERS, "left", true, "IGNORED PLAYERS"),
+        new KeyboardBtn(93, 13, "ADD IGNORED", 263, 30, true)
       ];
       this.header_items[TAB_IGNORED] = ignored;
 
       var ship:Array = [
         renderer.text(1, 28, TEXT_FORMAT_HEADERS, "left", true, "SHIP LIST"),
-        new txtbtn(14, 13, "x", 188, 30),
-        new txtbtn(46, 13, "ALL", 203, 30),
-        new txtbtn(53, 13, "CLEANERS", 250, 30),
-        new txtbtn(53, 13, "LEECHERS", 304, 30)
+        new KeyboardBtn(14, 13, "x", 138, 30, true),
+        new KeyboardBtn(46, 13, "ALL", 153, 30, true),
+        new KeyboardBtn(78, 13, "CLEANERS", 200, 30, true),
+        new KeyboardBtn(78, 13, "LEECHERS", 279, 30, true)
       ];
       this.header_items[TAB_SHIP] = ship;
 
       this.header_items[TAB_ALL][0].addEventListener(MouseEvent.CLICK, this.onAdd);
-      this.header_items[TAB_ALL][1].addEventListener(MouseEvent.MOUSE_OVER, this.onHelpMouseOver);
-      this.header_items[TAB_ALL][1].addEventListener(MouseEvent.MOUSE_OUT, this.onHelpMouseOut);
-      this.header_items[TAB_ALL][2].addEventListener(MouseEvent.CLICK, this.onKeyboard);
+      this.header_items[TAB_ALL][1].addEventListener(MouseEvent.CLICK, this.onKeyboard);
+      this.header_items[TAB_ALL][2].addEventListener(MouseEvent.MOUSE_OVER, this.onHelpMouseOver);
+      this.header_items[TAB_ALL][2].addEventListener(MouseEvent.MOUSE_OUT, this.onHelpMouseOut);
+      this.header_items[TAB_ALL][3].textColor = renderer.WHITE;
+      this.header_items[TAB_ALL][4].textColor = renderer.WHITE;
 
-      this.header_items[TAB_ALTS][1].addClickListener(this.onInviteAltsList);
+      this.header_items[TAB_FAV][0].textColor = renderer.WHITE;
+      this.header_items[TAB_FAV][1].textColor = renderer.WHITE;
+      this.header_items[TAB_FAV][2].textColor = renderer.WHITE;
 
-      this.header_items[TAB_QUICK][1].addClickListener(this.onClearQuickList);
-      this.header_items[TAB_QUICK][2].addClickListener(this.onInviteQuickList);
+      this.header_items[TAB_ALTS][0].textColor = renderer.WHITE;
+      this.header_items[TAB_ALTS][1].addEventListener(MouseEvent.CLICK, this.onInviteAltsList);
+
+      this.header_items[TAB_QUICK][0].textColor = renderer.WHITE;
+      this.header_items[TAB_QUICK][1].addEventListener(MouseEvent.CLICK, this.onClearQuickList);
+      this.header_items[TAB_QUICK][2].addEventListener(MouseEvent.CLICK, this.onInviteQuickList);
       this.header_items[TAB_QUICK][2].count = 0;
 
-      this.header_items[TAB_REQUEST][1].addClickListener(this.onAcceptAll);
+      this.header_items[TAB_REQUEST][0].textColor = renderer.WHITE;
+      this.header_items[TAB_REQUEST][1].addEventListener(MouseEvent.CLICK, this.onAcceptAll);
       this.header_items[TAB_REQUEST][1].count = 0;
+
+      this.header_items[TAB_IGNORED][0].textColor = renderer.WHITE;
       this.header_items[TAB_IGNORED][1].addEventListener(MouseEvent.CLICK, this.onAdd);
 
-      this.header_items[TAB_SHIP][1].addClickListener(this.onClearShipList);
-      this.header_items[TAB_SHIP][2].addClickListener(this.onInviteShipList);
-      this.header_items[TAB_SHIP][3].addClickListener(this.onInviteCleaners);
-      this.header_items[TAB_SHIP][4].addClickListener(this.onInviteLeechers);
+      this.header_items[TAB_SHIP][0].textColor = renderer.WHITE;
+      this.header_items[TAB_SHIP][1].addEventListener(MouseEvent.CLICK, this.onClearShipList);
+      this.header_items[TAB_SHIP][2].addEventListener(MouseEvent.CLICK, this.onInviteShipList);
+      this.header_items[TAB_SHIP][3].addEventListener(MouseEvent.CLICK, this.onInviteCleaners);
+      this.header_items[TAB_SHIP][3].count = 0;
+      this.header_items[TAB_SHIP][4].addEventListener(MouseEvent.CLICK, this.onInviteLeechers);
+      this.header_items[TAB_SHIP][4].count = 0;
     }
+
+    /* ---------------- */
+    /*   Other Events   */
+    /* ---------------- */
 
     private function onHelpMouseOver() : void {
       if(!this.help_area.stage) this.header_section.addChild(this.help_area);
@@ -485,23 +522,6 @@ package {
     private function onKeyboard() : void {
       if(!this.keyboard.stage) this.header_section.addChild(this.keyboard);
       else this.header_section.removeChild(this.keyboard);
-    }
-
-    private function filterFriends() : void {
-      this.list_fav.sortOn(["is_online", "name"], [Array.DESCENDING, Array.CASEINSENSITIVE]);
-      this.list_default.sortOn(["is_online", "name"], [Array.DESCENDING, Array.CASEINSENSITIVE]);
-      var list_all:Array = this.list_fav.concat(this.list_default);
-
-      var filteredList:Array = [];
-      for each (var f:Friend in list_all) {
-        if (f.name.toLowerCase().indexOf(this.filter.toLowerCase()) != -1 || this.filter == "") {
-          filteredList.push(f);
-        }
-      }
-
-      this.render_list = filteredList;
-      this.setupRows();
-      this.updateContainerSize();
     }
 
     public function onClickKey(e:MouseEvent) : void {
@@ -553,8 +573,8 @@ package {
       while(0 < this.list_cleaners.length) this.list_cleaners[0].onClean();
       config.configWrite("list_leechers");
       config.configWrite("list_cleaners");
-      this.leechers_count = 0;
-      this.cleaners_count = 0;
+      this.header_items[TAB_SHIP][3].count = 0;
+      this.header_items[TAB_SHIP][4].count = 0;
     }
 
     private function onAcceptAll() : void {
@@ -635,15 +655,15 @@ package {
 
     private function buildScrollbar() : void {
       this.scroll = {};
-      this.scroll.color = [2961475,1974319];
-      this.scroll.bar = renderer.rectangle(new Sprite(),0,0,6,40,986907,1);
+      this.scroll.color = [renderer.GRAY_38, renderer.GRAY_28];
+      this.scroll.bar = renderer.rectangle(new Sprite(),0,0,6,40, renderer.GRAY_16,1);
       this.scroll.bar.mouseEnabled = true;
       this.scroll.bar.x = 357;
       this.scroll.bar.y = 1;
-      this.scroll.scrubber = renderer.rectangle(new Shape(),0,0,6,40,this.scroll.color[0],1);
-      renderer.rectangle(this.scroll.scrubber,1,1,4,38,this.scroll.color[1],1);
+      this.scroll.scrubber = renderer.rectangle(new Shape(), 0, 0, 6, 40, this.scroll.color[0], 1);
+      renderer.rectangle(this.scroll.scrubber, 1, 1, 4, 38, this.scroll.color[1], 1);
       this.scroll.bar.addChild(this.scroll.scrubber);
-      this.scroll.zone = renderer.rectangle(new Sprite(),0,0,1600,400,0,0);
+      this.scroll.zone = renderer.rectangle(new Sprite(), 0, 0, 1600, 400, 0, 0);
       this.scroll.zone.x = -400;
       this.scroll.zone.y = -400;
       this.scroll.zone.addEventListener(MouseEvent.MOUSE_MOVE,this.onMouseMove);
@@ -708,20 +728,20 @@ package {
       if(this.render_list.length > config.cfg.max_rows) {
         if(!this.scroll.bar.stage) this.full_list.addChild(this.scroll.bar);
 
-        renderer.rectangle(this.scroll.scrubber,0,0,6,config.getScrubberSize(this.render_list.length,24),this.scroll.color[0],1);
-        renderer.rectangle(this.scroll.scrubber,1,1,4,config.getScrubberSize(this.render_list.length,24) - 2,this.scroll.color[1],1);
-        renderer.rectangle(this.scroll.bar,0,0,6,h,986907,1);
-        renderer.rectangle(this.scroll.zone,0,0,1600,h + 800,16711935,0);
+        renderer.rectangle(this.scroll.scrubber, 0, 0, 6, config.getScrubberSize(this.render_list.length, 24), this.scroll.color[0], 1);
+        renderer.rectangle(this.scroll.scrubber, 1, 1, 4, config.getScrubberSize(this.render_list.length, 24) - 2, this.scroll.color[1], 1);
+        renderer.rectangle(this.scroll.bar, 0, 0, 6, h, renderer.GRAY_16,1);
+        renderer.rectangle(this.scroll.zone, 0, 0, 1600, h + 800, 16711935, 0);
         w = 364;
       } else if(this.scroll.bar.stage) this.full_list.removeChild(this.scroll.bar);
 
-      renderer.rectangle(this.header_section,0,-1,w,45,986907,1);
-      renderer.rectangle(this.header_section,0,29,w,15,855319,1);
+      renderer.rectangle(this.header_section, 0, -1, w, 45, renderer.GRAY_22, 1);
+      renderer.rectangle(this.header_section, 0, 29, w, 15, renderer.GRAY_16, 1);
       this.clipping_mask.scaleY = h;
       this.full_list.graphics.clear();
-      renderer.rectangle(this.full_list,0,0,w,h + 2,986907,1);
-      renderer.rectangle(this.full_list,1,1,355,h,1776433,1);
-      if(h <= 1) renderer.rectangle(this.full_list,0,0,w,40,986907,1);
+      renderer.rectangle(this.full_list, 0, 0, w, h + 2, renderer.GRAY_16,1);
+      renderer.rectangle(this.full_list, 1, 1, 355, h, renderer.GRAY_25, 1);
+      if(h <= 1) renderer.rectangle(this.full_list, 0, 0, w, 40, renderer.GRAY_16, 1);
     }
 
     private function updateRenderList() : void {
@@ -793,6 +813,23 @@ package {
       if (this.filter != "")  this.filterFriends();
     }
 
+    private function filterFriends() : void {
+      this.list_fav.sortOn(["is_online", "name"], [Array.DESCENDING, Array.CASEINSENSITIVE]);
+      this.list_default.sortOn(["is_online", "name"], [Array.DESCENDING, Array.CASEINSENSITIVE]);
+      var list_all:Array = this.list_fav.concat(this.list_default);
+
+      var filteredList:Array = [];
+      for each (var f:Friend in list_all) {
+        if (f.name.toLowerCase().indexOf(this.filter.toLowerCase()) != -1 || this.filter == "") {
+          filteredList.push(f);
+        }
+      }
+
+      this.render_list = filteredList;
+      this.setupRows();
+      this.updateContainerSize();
+    }
+
     /* ---------------- */
     /*   ADD & REMOVE   */
     /* ---------------- */
@@ -858,7 +895,7 @@ package {
     public function onLeecherAdd(f:Friend) : void {
       if(this.list_leechers.indexOf(f) == -1 && this.list_cleaners.indexOf(f) == -1) {
         this.list_leechers.push(f);
-        this.leechers_count++;
+        this.header_items[TAB_SHIP][4].count++;
         config.configWrite("list_leechers");
       }
       if (this.tab == TAB_SHIP) this.onSortTimerComplete();
@@ -868,7 +905,7 @@ package {
       var idx:int = this.list_leechers.indexOf(f);
       if(idx != -1) {
         this.list_leechers.splice(idx, 1);
-        this.leechers_count--;
+        this.header_items[TAB_SHIP][4].count--;
         config.configWrite("list_leechers");
       }
       if (this.tab == TAB_SHIP) this.onSortTimerComplete();
@@ -877,7 +914,7 @@ package {
     public function onCleanerAdd(f:Friend) : void {
       if(this.list_cleaners.indexOf(f) == -1 && this.list_leechers.indexOf(f) == -1) {
         this.list_cleaners.push(f);
-        this.cleaners_count++;
+        this.header_items[TAB_SHIP][3].count++;
         config.configWrite("list_cleaners");
       }
       if (this.tab == TAB_SHIP) this.onSortTimerComplete();
@@ -887,7 +924,7 @@ package {
       var idx:int = this.list_cleaners.indexOf(f);
       if(idx != -1) {
         this.list_cleaners.splice(idx, 1);
-        this.cleaners_count--;
+        this.header_items[TAB_SHIP][3].count--;
         config.configWrite("list_cleaners");
       }
       if (this.tab == TAB_SHIP) this.onSortTimerComplete();

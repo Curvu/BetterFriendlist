@@ -10,9 +10,9 @@ package {
     public static const MASTERY_RANK_FORMAT:String = config.msg.MASTERY_RANK_FORMAT;
     public static const REQUEST_OUTGOING:String = config.msg.REQUEST_OUTGOING;
     public static const REQUEST_INCOMING:String = config.msg.REQUEST_INCOMING;
-    public static const TEXT_FORMAT_NAME:TextFormat = new TextFormat("Open Sans",12,16250871,true);
-    public static const TEXT_FORMAT_WORLD:TextFormat = new TextFormat("Open Sans",10,13553367,false);
-    public static const TEXT_FORMAT_RANK:TextFormat = new TextFormat("Open Sans",12,16768589,true);
+    public static const TEXT_FORMAT_NAME:TextFormat = new TextFormat("Open Sans", 12, renderer.DEFAULT_NAME_COLOR, true);
+    public static const TEXT_FORMAT_WORLD:TextFormat = new TextFormat("Open Sans", 10, 13553367, false);
+    public static const TEXT_FORMAT_RANK:TextFormat = new TextFormat("Open Sans", 12, renderer.RANK_COLOR, true);
 
     private var _uid:String;
     public var friends:Friends;
@@ -34,10 +34,9 @@ package {
     public var btnJoin:icnbtn;
     public var btnInvite:icnbtn;
     public var btnAccept:txtbtn;
-    public var btnHeart:icnbtn;
-    public var btnQuickList:icnbtn;
-    public var btnLeech:icnbtn;
-    public var btnClean:icnbtn;
+    public var btns:Array;
+
+    public var modal:Sprite;
 
     public function Friend(uid:String, name:String, is_online:Boolean, world:String, rank:String, can_join:Boolean, is_request:Boolean, can_accept:Boolean, can_invite:Boolean, team_pvp_enabled:Boolean, is_ignored:Boolean, highlight:Boolean, friends:Friends) {
       super();
@@ -106,9 +105,9 @@ package {
     }
 
     public function set rank(rank:String) : void {
-      if(!this._rank) this._rank = renderer.text(40, 0, TEXT_FORMAT_RANK, "left", true);
+      if(!this._rank) this._rank = renderer.text(4, 0, TEXT_FORMAT_RANK, "left", true);
       this._rank.text = rank.indexOf(MASTERY_RANK_FORMAT) == 0 ? rank.substring(MASTERY_RANK_FORMAT.length) : rank;
-      if(this._name) this._name.x = 40 + int(Math.max(3, this._rank.width) + 0.5) - 3;
+      if(this._name) this._name.x = 4 + int(Math.max(3, this._rank.width) + 0.5) - 3;
     }
 
     public function get rank() : String {
@@ -117,16 +116,16 @@ package {
 
     public function set name(name:String) : void {
       if(!this._name) {
-        this._name = renderer.text(40,0,TEXT_FORMAT_NAME,"left",true);
+        this._name = renderer.text(4,0,TEXT_FORMAT_NAME,"left",true);
         this._name.mouseEnabled = true;
-        this._name.addEventListener(MouseEvent.MOUSE_OVER,this.onNameMouseOver);
-        this._name.addEventListener(MouseEvent.RIGHT_MOUSE_UP,this.onNameMouseUp);
-        this._name.addEventListener(MouseEvent.MOUSE_UP,this.onNameMouseUp);
-        this._name.addEventListener(MouseEvent.MOUSE_OUT,this.onNameMouseOut);
-        this._name.addEventListener(MouseEvent.RIGHT_MOUSE_DOWN,this.onNameRightMouseDown);
-        this._name.addEventListener(MouseEvent.MOUSE_DOWN,this.onNameMouseDown);
-        this._name.addEventListener(MouseEvent.CLICK,this.onNameClick);
-        this._name.addEventListener(MouseEvent.RIGHT_CLICK,this.onNameRightClick);
+        this._name.addEventListener(MouseEvent.MOUSE_OVER, this.onNameMouseOver);
+        this._name.addEventListener(MouseEvent.RIGHT_MOUSE_UP, this.onNameMouseUp);
+        this._name.addEventListener(MouseEvent.MOUSE_UP, this.onNameMouseUp);
+        this._name.addEventListener(MouseEvent.MOUSE_OUT, this.onNameMouseOut);
+        this._name.addEventListener(MouseEvent.RIGHT_MOUSE_DOWN, this.onNameRightMouseDown);
+        this._name.addEventListener(MouseEvent.MOUSE_DOWN, this.onNameMouseDown);
+        this._name.addEventListener(MouseEvent.CLICK, this.onNameClick);
+        this._name.addEventListener(MouseEvent.RIGHT_CLICK, this.onNameRightClick);
         if(this._rank) this._name.x += int(Math.max(3,this._rank.width) + 0.5) - 3;
       }
       this._name.text = name;
@@ -158,19 +157,23 @@ package {
 
     private function onNameClick() : void {
       if(!this.is_ignored) {
-        ExternalInterface.call("POST_SOUND_EVENT","Play_ui_btnon_select");
-        ExternalInterface.call("OnWhisper",this.name);
+        ExternalInterface.call("POST_SOUND_EVENT", "Play_ui_btnon_select");
+        ExternalInterface.call("OnWhisper", this.name);
       }
     }
 
     private function onNameRightClick() : void {
-      ExternalInterface.call("POST_SOUND_EVENT","Play_ui_btnon_select");
-      ExternalInterface.call("OnRemove",this.uid,this.is_request);
+      ExternalInterface.call("POST_SOUND_EVENT", "Play_ui_btnon_select");
+      this.toggleModal();
     }
+
+    /* ------------------- */
+    /*    Setters/Getters   */
+    /* ------------------- */
 
     public function set world(world:String) : void {
       if(!this._world) {
-        this._world = renderer.text(40,17,TEXT_FORMAT_WORLD,"",true);
+        this._world = renderer.text(4,17,TEXT_FORMAT_WORLD,"",true);
         this._world.width = 230;
         this._world.height = 16;
       }
@@ -243,14 +246,14 @@ package {
     }
 
     private function buildRow() : void {
-      this.buildCorebtnons();
-      this.buildGroupbtnons();
-      this.bg = renderer.rectangle(new Shape(), 2, 0, 353, 37, 1579052, 1);
-      this._row = renderer.rectangle(new Sprite(), 0, 0, 2, 37, 5921894, 1);
-      var group_container:Shape = renderer.rectangle(new Shape(), 2, 0, 34, 37, 986907, 0.5);
-      this._row.addChild(this.bg);
-      this._row.addChild(group_container);
+      this.buildCoreBtns();
+      this.buildBtns();
+
+      this.bg = renderer.rectangle(new Shape(), 2, 0, 353, 37, renderer.GRAY_28, 1);
       this.bg.visible = false;
+
+      this._row = renderer.rectangle(new Sprite(), 0, 0, 2, 37, 5921894, 1);
+      this._row.addChild(this.bg);
       this._row.width = 355;
       this._row.height = 37;
       this._row.addChild(this._is_online);
@@ -259,14 +262,27 @@ package {
       this._row.addChild(this._world);
       this._row.addChild(this.btnJoin);
       this._row.addChild(this.btnInvite);
-      this._row.addChild(this.btnHeart);
-      this._row.addChild(this.btnQuickList);
-      this._row.addChild(this.btnLeech);
-      this._row.addChild(this.btnClean);
       if(this.btnAccept) this._row.addChild(this.btnAccept);
+
+      // create modal
+      this.modal = renderer.rectangle(new Sprite(), 0, 0, 353, 37, renderer.GRAY_28, 1);
+
+      var unfriendBtn:KeyboardBtn = new KeyboardBtn(76, 27, "UNFRIEND", 271, 5);
+      unfriendBtn.addEventListener(MouseEvent.CLICK, function() : void {
+        ExternalInterface.call("OnRemove", uid, is_request);
+      });
+      this.modal.addChild(unfriendBtn);
+
+      this.modal.addEventListener(MouseEvent.RIGHT_CLICK, this.toggleModal);
+      for each(var btn:icnbtn in this.btns) this.modal.addChild(btn);
     }
 
-    private function buildCorebtnons() : void {
+    private function toggleModal() : void {
+      if(!this.modal.stage) this._row.addChild(this.modal);
+      else this._row.removeChild(this.modal);
+    }
+
+    private function buildCoreBtns() : void {
       this.btnJoin = new icnbtn(new IconJoin(), 28, 28);
       this.btnInvite = new icnbtn(new IconInvite(), 28, 28);
       this.btnJoin.x = 315;
@@ -274,9 +290,9 @@ package {
       this.btnInvite.x = 270;
       this.btnInvite.y = 5;
 
-      // if(!this.can_join) this.btnJoin.disabled = true;
-      // else this.btnJoin.addEventListener(MouseEvent.CLICK,this.onJoin);
-      this.btnJoin.addEventListener(MouseEvent.CLICK,this.onJoin);
+      if(!this.can_join) this.btnJoin.disabled = true;
+      else this.btnJoin.addEventListener(MouseEvent.CLICK,this.onJoin);
+      // this.btnJoin.addEventListener(MouseEvent.CLICK,this.onJoin);
 
       this.btnInvite.addEventListener(MouseEvent.CLICK,this.onInvite);
 
@@ -287,44 +303,48 @@ package {
       }
     }
 
-    private function buildGroupbtnons() : void {
-      // Heart
-      this.btnHeart = new icnbtn(new IconHeartSmall(), 15, 13);
-      this.btnHeart.x = 3;
-      this.btnHeart.y = 3;
-      if(config.favs[this.uid]) {
-        this.btnHeart.toggled = true;
-        this._name.textColor = 16201328;
-        this._rank.textColor = 16250871;
-      } else if(config.alts[this.uid]) {
-        this.btnHeart.toggled = true;
-        this._name.textColor = 4278255615;
+    private function buildBtns() : void {
+      btns = [
+        new icnbtn(config.scale(new IconHeart(), 0.75), 24, 24),
+        new icnbtn(config.scale(new IconQuickList(), 0.75), 24, 24),
+        new icnbtn(config.scale(new IconLeecher(), 0.75), 24, 24),
+        new icnbtn(config.scale(new IconCleaner(), 0.75), 24, 24),
+        new icnbtn(config.scale(new IconAlts(), 0.75), 24, 24)
+      ];
+
+      var i:int = 0;
+      for each(var btn:icnbtn in btns) {
+        btn.x = 3 + (i * 28);
+        btn.y = 7;
+        i++;
       }
-      this.btnHeart.addEventListener(MouseEvent.CLICK, this.onFavorite);
+
+      // Heart
+      if(config.favs[this.uid]) {
+        this.btns[0].toggled = true;
+        this._name.textColor = renderer.FAVORITE_COLOR;
+      }
 
       // Quick List
-      this.btnQuickList = new icnbtn(new IconQuickListSmall(), 15, 13);
-      this.btnQuickList.x = 3;
-      this.btnQuickList.y = 20;
-      if(config.quick[this.uid]) this.btnQuickList.toggled = true;
-      this.btnQuickList.addEventListener(MouseEvent.CLICK, this.onQuickList);
+      if(config.quick[this.uid]) this.btns[1].toggled = true;
 
       // Leech
-      this.btnLeech = new icnbtn(new IconLeecher(), 15, 13);
-      this.btnLeech.x = 20;
-      this.btnLeech.y = 3;
-      if(config.leechers[this.uid]) this.btnLeech.toggled = true;
-      this.btnLeech.addEventListener(MouseEvent.CLICK, this.onLeech);
+      if(config.leechers[this.uid]) this.btns[2].toggled = true;
 
       // Clean
-      this.btnClean = new icnbtn(new IconCleaner(), 15, 13);
-      this.btnClean.x = 20;
-      this.btnClean.y = 20;
       if(config.cleaners[this.uid]) {
-        this.btnClean.toggled = true;
-        this._name.textColor = 4290479868;
+        this.btns[3].toggled = true;
+        this._name.textColor = renderer.CLEANER_COLOR;
       }
-      this.btnClean.addEventListener(MouseEvent.CLICK, this.onClean);
+
+      // Alt
+      if(config.alts[this.uid]) this.btns[4].toggled = true;
+
+      this.btns[0].addEventListener(MouseEvent.CLICK, this.onFavorite);
+      this.btns[1].addEventListener(MouseEvent.CLICK, this.onQuickList);
+      this.btns[2].addEventListener(MouseEvent.CLICK, this.onLeech);
+      this.btns[3].addEventListener(MouseEvent.CLICK, this.onClean);
+      this.btns[4].addEventListener(MouseEvent.CLICK, this.onAlt);
     }
 
     /* ------------------- */
@@ -336,91 +356,107 @@ package {
     }
 
     public function onJoin() : void {
-      ExternalInterface.call("OnJoinWorld",this.uid);
-      // if(this.can_join) ExternalInterface.call("OnJoinWorld",this.uid);
+      // ExternalInterface.call("OnJoinWorld",this.uid);
+      if(this.can_join) ExternalInterface.call("OnJoinWorld",this.uid);
     }
 
     public function onAccept() : void {
       ExternalInterface.call("OnAcceptRequest",this.uid);
     }
 
-    private function onFavorite() : void {
+    public function onFavorite() : void {
       var previous:Boolean = !!config.favs[this.uid];
-      this._rank.textColor = 16768589;
+      this.btns[0].toggled = !previous;
 
-      if(previous) { // If favorite - make it alt
-        this._name.textColor = 4278255615;
-        config.alts[this.uid] = true;
+      if(previous) { // If favorite - remove it
+        this._name.textColor = renderer.DEFAULT_NAME_COLOR;
         config.favs[this.uid] = null;
         this.friends.onFavoriteRemove(this);
-        this.friends.onAltAdd(this);
-      } else if(config.alts[this.uid]) { // If alt - make it default
-        this.btnHeart.toggled = false;
-        this._name.textColor = 16250871;
-        config.alts[this.uid] = null;
-        config.favs[this.uid] = null;
-        this.friends.onAltRemove(this);
       } else { // If default - make it favorite
-        this.btnHeart.toggled = true;
-        this._name.textColor = 16201328;
-        this._rank.textColor = 16250871;
+        this._name.textColor = renderer.FAVORITE_COLOR;
         config.favs[this.uid] = true;
         this.friends.onFavoriteAdd(this);
       }
+
+      this.toggleModal();
+    }
+
+    public function onAlt() : void {
+      var previous:Boolean = !!config.alts[this.uid];
+      this.btns[4].toggled = !previous;
+
+      if(previous) {
+        config.alts[this.uid] = null;
+        this.friends.onAltRemove(this);
+      } else {
+        config.alts[this.uid] = true;
+        this.friends.onAltAdd(this);
+      }
+
+      this.toggleModal();
     }
 
     public function onQuickList(is_internal:* = null) : void {
       var previous:Boolean = !!config.quick[this.uid];
+      this.btns[1].toggled = !previous;
+
       if(previous) {
-        this.btnQuickList.toggled = false;
         config.quick[this.uid] = null;
         this.friends.onQuickListRemove(this,!!is_internal);
       } else {
-        this.btnQuickList.toggled = true;
         config.quick[this.uid] = true;
         this.friends.onQuickListAdd(this);
       }
+
+      this.toggleModal();
     }
 
     public function onClean() : void {
       if(config.leechers[this.uid]) { // Disable leecher
-        this.btnLeech.toggled = false;
+        this.btns[2].toggled = false;
+        this._name.textColor = renderer.DEFAULT_NAME_COLOR;
         config.leechers[this.uid] = null;
         this.friends.onLeecherRemove(this);
       }
 
       var previous:Boolean = !!config.cleaners[this.uid];
+      this.btns[3].toggled = !previous;
+
       if(previous) {
-        this.btnClean.toggled = false;
-        this._name.textColor = 16250871;
+        this._name.textColor = renderer.DEFAULT_NAME_COLOR;
         config.cleaners[this.uid] = null;
         this.friends.onCleanerRemove(this);
       } else {
-        this.btnClean.toggled = true;
-        this._name.textColor = 4290479868;
+        this._name.textColor = renderer.CLEANER_COLOR;
         config.cleaners[this.uid] = true;
         this.friends.onCleanerAdd(this);
       }
+
+      this.toggleModal();
     }
 
     public function onLeech() : void {
       if(config.cleaners[this.uid]) { // Disable cleaner
-        this.btnClean.toggled = false;
-        this._name.textColor = 16250871;
+        this.btns[3].toggled = false;
+        this._name.textColor = renderer.DEFAULT_NAME_COLOR;
         config.cleaners[this.uid] = null;
         this.friends.onCleanerRemove(this);
       }
 
       var previous:Boolean = !!config.leechers[this.uid];
+      this.btns[2].toggled = !previous;
+
       if(previous) {
-        this.btnLeech.toggled = false;
+        this._name.textColor = renderer.DEFAULT_NAME_COLOR;
         config.leechers[this.uid] = null;
         this.friends.onLeecherRemove(this);
       } else {
-        this.btnLeech.toggled = true;
+        this._name.textColor = renderer.LEECHER_COLOR;
         config.leechers[this.uid] = true;
         this.friends.onLeecherAdd(this);
       }
+
+      this.toggleModal();
     }
   }
 }

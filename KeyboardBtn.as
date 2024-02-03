@@ -13,16 +13,17 @@ package {
     public var format:TextFormat;
     private var _text:TextField;
     private var bg:Shape;
-    private var _disabled:Boolean = false;
     private var listeners:Array = [];
     private var _msg:String;
     private var _count:int = 0;
+    private var border:Boolean = false;
 
     private var width:int;
     private var height:int;
 
-    public function KeyboardBtn(w:int = 64, h:int = 12, txt:String = "", x:int = 0, y:int = 0) {
+    public function KeyboardBtn(w:int = 64, h:int = 12, txt:String = "", x:int = 0, y:int = 0, flag:Boolean = false) {
       super();
+      this.border = !flag;
 
       this.width = w;
       this.height = h;
@@ -32,11 +33,12 @@ package {
 
       renderer.rectangle(this, 0, 0, w, h, 0, 0);
       this.bg = renderer.rectangle(new Shape(), 0, 0, w, h, renderer.GRAY_28, 1);
-      renderer.outline(this.bg, 0, 0, w, h, renderer.GRAY_12, 1);
+      if (this.border) renderer.outline(this.bg, 0, 0, w, h, renderer.GRAY_12, 1);
 
       this._text = renderer.text(0, 1, this.format, "", true, txt);
       this._text.height = 14;
       this._text.width = w;
+      this._text.y = ((h - this._text.height) / 2) - 1;
 
       this.addChild(this.bg);
       this.addChild(this._text);
@@ -45,6 +47,15 @@ package {
 
       this.x = x;
       this.y = y;
+    }
+
+    public function get count() : int {
+      return this._count;
+    }
+
+    public function set count(num:int) : void {
+      this._text.text = this._msg + " (" + num + ")";
+      this._count = num;
     }
 
     private function addMouseEventListeners() : void {
@@ -58,26 +69,26 @@ package {
     private function onMouseOver() : void {
       this.bg.graphics.clear();
       renderer.rectangle(this.bg, 0, 0, this.width, this.height, renderer.GRAY_28, 1);
-      renderer.outline(this.bg, 0, 0, this.width, this.height, renderer.WHITE, 1);
+      if (this.border) renderer.outline(this.bg, 0, 0, this.width, this.height, renderer.WHITE, 1);
     }
 
     private function onMouseOut() : void {
       this.bg.graphics.clear();
       renderer.rectangle(this.bg, 0, 0, this.width, this.height, renderer.GRAY_28, 1);
-      renderer.outline(this.bg, 0, 0, this.width, this.height, renderer.GRAY_12, 1);
+      if (this.border) renderer.outline(this.bg, 0, 0, this.width, this.height, renderer.GRAY_12, 1);
     }
 
     private function onMouseDown() : void {
       ExternalInterface.call("POST_SOUND_EVENT",CLICK_SOUND);
       this.bg.graphics.clear();
       renderer.rectangle(this.bg, 0, 0, this.width, this.height, renderer.GRAY_22, 1);
-      renderer.outline(this.bg, 0, 0, this.width, this.height, renderer.WHITE, 1);
+      if (this.border) renderer.outline(this.bg, 0, 0, this.width, this.height, renderer.WHITE, 1);
     }
 
     private function onMouseUp() : void {
       this.bg.graphics.clear();
       renderer.rectangle(this.bg, 0, 0, this.width, this.height, renderer.GRAY_28, 1);
-      renderer.outline(this.bg, 0, 0, this.width, this.height, renderer.WHITE, 1);
+      if (this.border) renderer.outline(this.bg, 0, 0, this.width, this.height, renderer.WHITE, 1);
     }
 
     private function onClick() : void {

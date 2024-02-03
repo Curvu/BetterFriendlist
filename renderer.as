@@ -8,6 +8,7 @@ package {
     private static const TEXT_FORMAT_DEFAULT:TextFormat = new TextFormat("Open Sans",12,16777215,false);
     private static const TEXT_FORMAT_SMALL:TextFormat = new TextFormat("Open Sans",9,4738417,true,false,false,false,false,"center");
 
+    public static const GREEN:uint = 4286381056;
     public static const BLACK:uint = 0;
     public static const WHITE:uint = 16777215;
     public static const GRAY_9:uint = 592137;
@@ -21,6 +22,11 @@ package {
     public static const GRAY_38:int = 2500134;
     public static const GRAY_41:int = 2697513;
     public static const GRAY_48:int = 3158064;
+    public static const DEFAULT_NAME_COLOR:int = 16250871;
+    public static const RANK_COLOR:int = 16768589;
+    public static const FAVORITE_COLOR:int = 16201328;
+    public static const CLEANER_COLOR:int = 4290479868;
+    public static const LEECHER_COLOR:int = 4292997629;
 
     public function renderer() {
       super();
@@ -59,6 +65,14 @@ package {
       tf.y = y;
       tf.text = str;
       return tf;
+    }
+
+    public static function circle(s:*, x:int = 0, y:int = 0, r:Number = 0, rgb:int = 0, a:Number = 1) : * {
+      if(!s) return;
+      s.graphics.beginFill(rgb, a);
+      s.graphics.drawCircle(x, y, r);
+      s.graphics.endFill();
+      return s;
     }
   }
 }

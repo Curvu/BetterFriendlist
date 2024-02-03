@@ -2,7 +2,7 @@ package {
   import flash.external.ExternalInterface;
 
   public class config {
-    public static const MOD_NAME:String = "BetterFriendlist";
+    public static const MOD_NAME:String = "betterfriendlist";
     public static const FILE_NAME:String = "friendslist.swf";
 
     public static var M:*;
