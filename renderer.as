@@ -8,7 +8,7 @@ package {
     private static const TEXT_FORMAT_DEFAULT:TextFormat = new TextFormat("Open Sans",12,16777215,false);
     private static const TEXT_FORMAT_SMALL:TextFormat = new TextFormat("Open Sans",9,4738417,true,false,false,false,false,"center");
 
-    public static const GREEN:uint = 4286381056;
+    public static const GREEN:uint = 5299046;
     public static const BLACK:uint = 0;
     public static const WHITE:uint = 16777215;
     public static const GRAY_9:uint = 592137;

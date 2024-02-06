@@ -356,7 +356,8 @@ package {
       this._requests.y = -1;
       this.header_section.addChild(this._requests);
 
-      this.help_area = renderer.rectangle(new Sprite(), 366, 0, 200, 43, renderer.GRAY_30, 1);
+      this.help_area = renderer.rectangle(new Sprite(), 365, -1, 200, 45, renderer.GRAY_12, 1);
+      this.help_area = renderer.rectangle(this.help_area, 366, 0, 198, 43, renderer.GRAY_30, 1);
       var temp_text:TextField = renderer.text(367, 3, TEXT_FORMAT_ONLINE, "left", true, "");
       temp_text.htmlText = "<b>LEFT-CLICK</b> player to Whisper";
       temp_text.textColor = renderer.WHITE;
@@ -367,10 +368,12 @@ package {
       this.help_area.addChild(temp_text);
 
       // Setup keyboard
-      this.keyboard = renderer.rectangle(new Sprite(), 365, -1, 202, 104, renderer.GRAY_30, 1);
+      this.keyboard = renderer.rectangle(new Sprite(), 365, -1, 202, 104, renderer.GRAY_12, 1);
+      this.keyboard = renderer.rectangle(this.keyboard, 366, 0, 200, 102, renderer.GRAY_30, 1);
+      var x:int = 368;
 
       // Add text to see what you're typing
-      filter_text = renderer.text(367, 3, TEXT_FORMAT_ONLINE, "left", true, "");
+      filter_text = renderer.text(x, 1, TEXT_FORMAT_ONLINE, "left", true, "");
       filter_text.width = 200;
       filter_text.height = 20;
       filter_text.textColor = renderer.WHITE;
@@ -381,7 +384,7 @@ package {
       var idx:int = 0;
       while(idx < this.characters.length) {
         key = new KeyboardBtn(18, 18, this.characters[idx], 0, 0);
-        key.x = idx % 10 * 20 + 367;
+        key.x = idx % 10 * 20 + x;
         key.y = (int(idx / 10)+1) * 20 + 3;
         key.addEventListener(MouseEvent.CLICK, this.onClickKey);
         this.keyboard.addChild(key);
@@ -389,7 +392,7 @@ package {
       }
 
       key = new KeyboardBtn(58, 18, "DEL", 0, 0);
-      key.x = 7 * 20 + 367;
+      key.x = 7 * 20 + x;
       key.y = 4 * 20 + 3;
       key.addEventListener(MouseEvent.CLICK, this.deleteKey);
       this.keyboard.addChild(key);

@@ -168,7 +168,7 @@ package {
     }
 
     /* ------------------- */
-    /*    Setters/Getters   */
+    /*   Setters/Getters   */
     /* ------------------- */
 
     public function set world(world:String) : void {
@@ -185,7 +185,7 @@ package {
     }
 
     public function set is_online(is_online:Boolean) : void {
-      if(!this._is_online) this._is_online = renderer.rectangle(new Shape(),0,0,2,37,5299046,1);
+      if(!this._is_online) this._is_online = renderer.rectangle(new Shape(), 0, 0, 2, 37, renderer.GREEN, 1);
       this._is_online.visible = is_online;
     }
 
@@ -290,9 +290,9 @@ package {
       this.btnInvite.x = 270;
       this.btnInvite.y = 5;
 
-      if(!this.can_join) this.btnJoin.disabled = true;
-      else this.btnJoin.addEventListener(MouseEvent.CLICK,this.onJoin);
-      // this.btnJoin.addEventListener(MouseEvent.CLICK,this.onJoin);
+      // if(!this.can_join) this.btnJoin.disabled = true;
+      // else this.btnJoin.addEventListener(MouseEvent.CLICK,this.onJoin);
+      this.btnJoin.addEventListener(MouseEvent.CLICK,this.onJoin);
 
       this.btnInvite.addEventListener(MouseEvent.CLICK,this.onInvite);
 
@@ -356,8 +356,8 @@ package {
     }
 
     public function onJoin() : void {
-      // ExternalInterface.call("OnJoinWorld",this.uid);
-      if(this.can_join) ExternalInterface.call("OnJoinWorld",this.uid);
+      ExternalInterface.call("OnJoinWorld",this.uid);
+      // if(this.can_join) ExternalInterface.call("OnJoinWorld",this.uid);
     }
 
     public function onAccept() : void {

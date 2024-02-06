@@ -32,13 +32,14 @@ package {
       this.format = TEXT_FORMAT_DEFAULT;
 
       renderer.rectangle(this, 0, 0, w, h, 0, 0);
-      this.bg = renderer.rectangle(new Shape(), 0, 0, w, h, renderer.GRAY_28, 1);
-      if (this.border) renderer.outline(this.bg, 0, 0, w, h, renderer.GRAY_12, 1);
+      this.bg = new Shape();
+      if (this.border) this.bg = renderer.rectangle(this.bg, -1, -1, w, h, renderer.GRAY_12, 1);
+      this.bg = renderer.rectangle(this.bg, 0, 0, w - (this.border ? 2 : 0), h - (this.border ? 2 : 0), renderer.GRAY_28, 1);
 
-      this._text = renderer.text(0, 1, this.format, "", true, txt);
+      this._text = renderer.text(-(this.border ? 1 : 0), 0, this.format, "", true, txt);
       this._text.height = 14;
       this._text.width = w;
-      this._text.y = ((h - this._text.height) / 2) - 1;
+      this._text.y = ((h - this._text.height - (this.border ? 2 : 0)) / 2) - 1;
 
       this.addChild(this.bg);
       this.addChild(this._text);
@@ -68,27 +69,27 @@ package {
 
     private function onMouseOver() : void {
       this.bg.graphics.clear();
-      renderer.rectangle(this.bg, 0, 0, this.width, this.height, renderer.GRAY_28, 1);
-      if (this.border) renderer.outline(this.bg, 0, 0, this.width, this.height, renderer.WHITE, 1);
+      if (this.border) renderer.rectangle(this.bg, -1, -1, this.width, this.height, renderer.WHITE, 1);
+      renderer.rectangle(this.bg, 0, 0, this.width - (this.border ? 2 : 0), this.height - (this.border ? 2 : 0), renderer.GRAY_28, 1);
     }
 
     private function onMouseOut() : void {
       this.bg.graphics.clear();
-      renderer.rectangle(this.bg, 0, 0, this.width, this.height, renderer.GRAY_28, 1);
-      if (this.border) renderer.outline(this.bg, 0, 0, this.width, this.height, renderer.GRAY_12, 1);
+      if (this.border) renderer.rectangle(this.bg, -1, -1, this.width, this.height, renderer.GRAY_12, 1);
+      renderer.rectangle(this.bg, 0, 0, this.width - (this.border ? 2 : 0), this.height - (this.border ? 2 : 0), renderer.GRAY_28, 1);
     }
 
     private function onMouseDown() : void {
       ExternalInterface.call("POST_SOUND_EVENT",CLICK_SOUND);
       this.bg.graphics.clear();
-      renderer.rectangle(this.bg, 0, 0, this.width, this.height, renderer.GRAY_22, 1);
-      if (this.border) renderer.outline(this.bg, 0, 0, this.width, this.height, renderer.WHITE, 1);
+      if (this.border) renderer.rectangle(this.bg, -1, -1, this.width, this.height, renderer.WHITE, 1);
+      renderer.rectangle(this.bg, 0, 0, this.width - (this.border ? 2 : 0), this.height - (this.border ? 2 : 0), renderer.GRAY_22, 1);
     }
 
     private function onMouseUp() : void {
       this.bg.graphics.clear();
-      renderer.rectangle(this.bg, 0, 0, this.width, this.height, renderer.GRAY_28, 1);
-      if (this.border) renderer.outline(this.bg, 0, 0, this.width, this.height, renderer.WHITE, 1);
+      if (this.border) renderer.rectangle(this.bg, -1, -1, this.width, this.height, renderer.WHITE, 1);
+      renderer.rectangle(this.bg, 0, 0, this.width - (this.border ? 2 : 0), this.height - (this.border ? 2 : 0), renderer.GRAY_28, 1);
     }
 
     private function onClick() : void {
