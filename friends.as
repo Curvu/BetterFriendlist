@@ -10,7 +10,6 @@ package {
   import flash.utils.Timer;
 
   public class Friends {
-    // todo implement the logic for color_lists
     public static const TEXT_FORMAT_ONLINE:TextFormat = new TextFormat("Open Sans",11,16250871,false,false,false,false,false,"right");
     public static const TEXT_FORMAT_REQUESTS:TextFormat = new TextFormat("Open Sans",10,16201328,true);
     public static const TEXT_FORMAT_HEADERS:TextFormat = new TextFormat("Open Sans",9,4738417,false);
@@ -67,20 +66,6 @@ package {
 
     private var pickColor:Sprite;
     private var color_pick_btns:Array = [];
-
-    // Color arrays
-    private var chooseColor:Sprite;
-    private var colors:Array = ["red","orange","yellow","green","cyan","blue","purple"];
-    private var color_btns:Array = [];
-    public static var list_colors:Object = {
-      "red": [],
-      "orange": [],
-      "yellow": [],
-      "green": [],
-      "cyan": [],
-      "blue": [],
-      "purple": []
-    };
 
     // Keyboard
     private var keyboard:Sprite;

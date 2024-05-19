@@ -7,8 +7,6 @@ package {
 
     public static var M:*;
 
-    public static const color_names:Array = ["red", "orange", "yellow", "green", "cyan", "blue", "purple"];
-
     public static const CType:Object = {
       "BOOL": 0,
       "UINT": 1,
