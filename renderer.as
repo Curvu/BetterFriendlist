@@ -28,6 +28,16 @@ package {
     public static const CLEANER_COLOR:int = 4290479868;
     public static const LEECHER_COLOR:int = 4292997629;
 
+    public static const COLORS:Object = {
+      "red": 4294836556,
+      "orange": 4294469929,
+      "yellow": 4294957072,
+      "green": 4289593088,
+      "cyan": 4278255615,
+      "blue": 4278277887,
+      "purple": 4289214975
+    };
+
     public function renderer() {
       super();
     }
@@ -36,6 +46,14 @@ package {
       if(!s) return;
       s.graphics.beginFill(rgb,a);
       s.graphics.drawRect(x,y,w,h);
+      s.graphics.endFill();
+      return s;
+    }
+
+    public static function rounded(s:*, x:int = 0, y:int = 0, w:int = 0, h:int = 0, r:int = 0, rgb:int = 0, a:Number = 1) : * {
+      if(!s) return;
+      s.graphics.beginFill(rgb,a);
+      s.graphics.drawRoundRect(x,y,w,h,r);
       s.graphics.endFill();
       return s;
     }

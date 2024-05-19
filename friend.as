@@ -33,10 +33,9 @@ package {
     // Buttons
     public var btnJoin:icnbtn;
     public var btnInvite:icnbtn;
+    public var btnQuickList:icnbtn;
+    public var btnFavorite:icnbtn;
     public var btnAccept:txtbtn;
-    public var btns:Array;
-
-    public var modal:Sprite;
 
     public function Friend(uid:String, name:String, is_online:Boolean, world:String, rank:String, can_join:Boolean, is_request:Boolean, can_accept:Boolean, can_invite:Boolean, team_pvp_enabled:Boolean, is_ignored:Boolean, highlight:Boolean, friends:Friends) {
       super();
@@ -105,9 +104,9 @@ package {
     }
 
     public function set rank(rank:String) : void {
-      if(!this._rank) this._rank = renderer.text(4, 0, TEXT_FORMAT_RANK, "left", true);
+      if(!this._rank) this._rank = renderer.text(23, 0, TEXT_FORMAT_RANK, "left", true);
       this._rank.text = rank.indexOf(MASTERY_RANK_FORMAT) == 0 ? rank.substring(MASTERY_RANK_FORMAT.length) : rank;
-      if(this._name) this._name.x = 4 + int(Math.max(3, this._rank.width) + 0.5) - 3;
+      if(this._name) this._name.x = 23 + int(Math.max(3, this._rank.width) + 0.5) - 3;
     }
 
     public function get rank() : String {
@@ -116,7 +115,7 @@ package {
 
     public function set name(name:String) : void {
       if(!this._name) {
-        this._name = renderer.text(4,0,TEXT_FORMAT_NAME,"left",true);
+        this._name = renderer.text(23,0,TEXT_FORMAT_NAME,"left",true);
         this._name.mouseEnabled = true;
         this._name.addEventListener(MouseEvent.MOUSE_OVER, this.onNameMouseOver);
         this._name.addEventListener(MouseEvent.RIGHT_MOUSE_UP, this.onNameMouseUp);
@@ -164,7 +163,7 @@ package {
 
     private function onNameRightClick() : void {
       ExternalInterface.call("POST_SOUND_EVENT", "Play_ui_btnon_select");
-      this.toggleModal();
+      ExternalInterface.call("OnRemove", uid, is_request);
     }
 
     /* ------------------- */
@@ -173,7 +172,7 @@ package {
 
     public function set world(world:String) : void {
       if(!this._world) {
-        this._world = renderer.text(4,17,TEXT_FORMAT_WORLD,"",true);
+        this._world = renderer.text(23,17,TEXT_FORMAT_WORLD,"",true);
         this._world.width = 230;
         this._world.height = 16;
       }
@@ -247,39 +246,29 @@ package {
 
     private function buildRow() : void {
       this.buildCoreBtns();
-      this.buildBtns();
+      this.buildGroupBtns();
 
       this.bg = renderer.rectangle(new Shape(), 2, 0, 353, 37, renderer.GRAY_28, 1);
+      this._row = renderer.rectangle(new Sprite(), 0, 0, 2, 37, renderer.GRAY_38, 1);
+      var group_container:Shape = renderer.rectangle(new Shape(), 2, 0, 17, 37, renderer.GRAY_22, 0.5);
+      this._row.addChild(this.bg);
+      this._row.addChild(group_container);
       this.bg.visible = false;
 
-      this._row = renderer.rectangle(new Sprite(), 0, 0, 2, 37, 5921894, 1);
-      this._row.addChild(this.bg);
       this._row.width = 355;
       this._row.height = 37;
+
       this._row.addChild(this._is_online);
       this._row.addChild(this._rank);
       this._row.addChild(this._name);
       this._row.addChild(this._world);
       this._row.addChild(this.btnJoin);
       this._row.addChild(this.btnInvite);
+
       if(this.btnAccept) this._row.addChild(this.btnAccept);
 
-      // create modal
-      this.modal = renderer.rectangle(new Sprite(), 0, 0, 353, 37, renderer.GRAY_28, 1);
-
-      var unfriendBtn:KeyboardBtn = new KeyboardBtn(76, 27, "UNFRIEND", 271, 5);
-      unfriendBtn.addEventListener(MouseEvent.CLICK, function() : void {
-        ExternalInterface.call("OnRemove", uid, is_request);
-      });
-      this.modal.addChild(unfriendBtn);
-
-      this.modal.addEventListener(MouseEvent.RIGHT_CLICK, this.toggleModal);
-      for each(var btn:icnbtn in this.btns) this.modal.addChild(btn);
-    }
-
-    private function toggleModal() : void {
-      if(!this.modal.stage) this._row.addChild(this.modal);
-      else this._row.removeChild(this.modal);
+      this._row.addChild(this.btnQuickList);
+      this._row.addChild(this.btnFavorite);
     }
 
     private function buildCoreBtns() : void {
@@ -303,48 +292,36 @@ package {
       }
     }
 
-    private function buildBtns() : void {
-      btns = [
-        new icnbtn(config.scale(new IconHeart(), 0.75), 24, 24),
-        new icnbtn(config.scale(new IconQuickList(), 0.75), 24, 24),
-        new icnbtn(config.scale(new IconLeecher(), 0.75), 24, 24),
-        new icnbtn(config.scale(new IconCleaner(), 0.75), 24, 24),
-        new icnbtn(config.scale(new IconAlts(), 0.75), 24, 24)
-      ];
-
-      var i:int = 0;
-      for each(var btn:icnbtn in btns) {
-        btn.x = 3 + (i * 28);
-        btn.y = 7;
-        i++;
-      }
-
+    private function buildGroupBtns() : void {
       // Heart
+      this.btnFavorite = new icnbtn(new IconHeartSmall(), 15, 13);
+      this.btnFavorite.x = 3;
+      this.btnFavorite.y = 3;
       if(config.favs[this.uid]) {
-        this.btns[0].toggled = true;
+        this.btnFavorite.toggled = true;
         this._name.textColor = renderer.FAVORITE_COLOR;
       }
 
       // Quick List
-      if(config.quick[this.uid]) this.btns[1].toggled = true;
+      this.btnQuickList = new icnbtn(new IconQuickListSmall(), 15, 13, true);
+      this.btnQuickList.x = 3;
+      this.btnQuickList.y = 20;
+      this.updateQuickListBtn();
 
-      // Leech
-      if(config.leechers[this.uid]) this.btns[2].toggled = true;
+      this.btnFavorite.addEventListener(MouseEvent.CLICK, this.onFavorite);
+      this.btnQuickList.addEventListener(MouseEvent.CLICK, this.onQuickList);
+    }
 
-      // Clean
-      if(config.cleaners[this.uid]) {
-        this.btns[3].toggled = true;
-        this._name.textColor = renderer.CLEANER_COLOR;
-      }
+    public function updateQuickListBtn() : void {
+      var color:String = config.cfg.active_color;
 
-      // Alt
-      if(config.alts[this.uid]) this.btns[4].toggled = true;
-
-      this.btns[0].addEventListener(MouseEvent.CLICK, this.onFavorite);
-      this.btns[1].addEventListener(MouseEvent.CLICK, this.onQuickList);
-      this.btns[2].addEventListener(MouseEvent.CLICK, this.onLeech);
-      this.btns[3].addEventListener(MouseEvent.CLICK, this.onClean);
-      this.btns[4].addEventListener(MouseEvent.CLICK, this.onAlt);
+      if(color == "red" && config.red[this.uid]) this.btnQuickList.toggled = true;
+      else if(color == "orange" && config.orange[this.uid]) this.btnQuickList.toggled = true;
+      else if(color == "yellow" && config.yellow[this.uid]) this.btnQuickList.toggled = true;
+      else if(color == "green" && config.green[this.uid]) this.btnQuickList.toggled = true;
+      else if(color == "cyan" && config.cyan[this.uid]) this.btnQuickList.toggled = true;
+      else if(color == "blue" && config.blue[this.uid]) this.btnQuickList.toggled = true;
+      else if(color == "purple" && config.purple[this.uid]) this.btnQuickList.toggled = true;
     }
 
     /* ------------------- */
@@ -352,11 +329,11 @@ package {
     /* ------------------- */
 
     public function onInvite() : void {
-      ExternalInterface.call("OnInviteToJoinMe",this.uid);
+      ExternalInterface.call("OnInviteToJoinMe", this.uid);
     }
 
     public function onJoin() : void {
-      ExternalInterface.call("OnJoinWorld",this.uid);
+      ExternalInterface.call("OnJoinWorld", this.uid);
       // if(this.can_join) ExternalInterface.call("OnJoinWorld",this.uid);
     }
 
@@ -366,7 +343,7 @@ package {
 
     public function onFavorite() : void {
       var previous:Boolean = !!config.favs[this.uid];
-      this.btns[0].toggled = !previous;
+      this.btnFavorite.toggled = !previous;
 
       if(previous) { // If favorite - remove it
         this._name.textColor = renderer.DEFAULT_NAME_COLOR;
@@ -377,86 +354,45 @@ package {
         config.favs[this.uid] = true;
         this.friends.onFavoriteAdd(this);
       }
-
-      this.toggleModal();
     }
 
-    public function onAlt() : void {
-      var previous:Boolean = !!config.alts[this.uid];
-      this.btns[4].toggled = !previous;
+    public function onQuickList() : void {
+      var color:String = config.cfg.active_color;
+      var previous:Boolean;
 
-      if(previous) {
-        config.alts[this.uid] = null;
-        this.friends.onAltRemove(this);
+      if(color == "red") previous = !!config.red[this.uid];
+      else if(color == "orange") previous = !!config.orange[this.uid];
+      else if(color == "yellow") previous = !!config.yellow[this.uid];
+      else if(color == "green") previous = !!config.green[this.uid];
+      else if(color == "cyan") previous = !!config.cyan[this.uid];
+      else if(color == "blue") previous = !!config.blue[this.uid];
+      else if(color == "purple") previous = !!config.purple[this.uid];
+
+      this.btnQuickList.toggled = !previous;
+
+      if(previous) { // If in list - remove it
+        if(color == "red") config.red[this.uid] = null;
+        else if(color == "orange") config.orange[this.uid] = null;
+        else if(color == "yellow") config.yellow[this.uid] = null;
+        else if(color == "green") config.green[this.uid] = null;
+        else if(color == "cyan") config.cyan[this.uid] = null;
+        else if(color == "blue") config.blue[this.uid] = null;
+        else if(color == "purple") config.purple[this.uid] = null;
+
+        this.friends.onQuickListRemove(this);
       } else {
-        config.alts[this.uid] = true;
-        this.friends.onAltAdd(this);
-      }
+        if(color == "red") config.red[this.uid] = true;
+        else if(color == "orange") config.orange[this.uid] = true;
+        else if(color == "yellow") config.yellow[this.uid] = true;
+        else if(color == "green") config.green[this.uid] = true;
+        else if(color == "cyan") config.cyan[this.uid] = true;
+        else if(color == "blue") config.blue[this.uid] = true;
+        else if(color == "purple") config.purple[this.uid] = true;
 
-      this.toggleModal();
-    }
-
-    public function onQuickList(is_internal:* = null) : void {
-      var previous:Boolean = !!config.quick[this.uid];
-      this.btns[1].toggled = !previous;
-
-      if(previous) {
-        config.quick[this.uid] = null;
-        this.friends.onQuickListRemove(this,!!is_internal);
-      } else {
-        config.quick[this.uid] = true;
         this.friends.onQuickListAdd(this);
       }
 
-      this.toggleModal();
-    }
-
-    public function onClean() : void {
-      if(config.leechers[this.uid]) { // Disable leecher
-        this.btns[2].toggled = false;
-        this._name.textColor = renderer.DEFAULT_NAME_COLOR;
-        config.leechers[this.uid] = null;
-        this.friends.onLeecherRemove(this);
-      }
-
-      var previous:Boolean = !!config.cleaners[this.uid];
-      this.btns[3].toggled = !previous;
-
-      if(previous) {
-        this._name.textColor = renderer.DEFAULT_NAME_COLOR;
-        config.cleaners[this.uid] = null;
-        this.friends.onCleanerRemove(this);
-      } else {
-        this._name.textColor = renderer.CLEANER_COLOR;
-        config.cleaners[this.uid] = true;
-        this.friends.onCleanerAdd(this);
-      }
-
-      this.toggleModal();
-    }
-
-    public function onLeech() : void {
-      if(config.cleaners[this.uid]) { // Disable cleaner
-        this.btns[3].toggled = false;
-        this._name.textColor = renderer.DEFAULT_NAME_COLOR;
-        config.cleaners[this.uid] = null;
-        this.friends.onCleanerRemove(this);
-      }
-
-      var previous:Boolean = !!config.leechers[this.uid];
-      this.btns[2].toggled = !previous;
-
-      if(previous) {
-        this._name.textColor = renderer.DEFAULT_NAME_COLOR;
-        config.leechers[this.uid] = null;
-        this.friends.onLeecherRemove(this);
-      } else {
-        this._name.textColor = renderer.LEECHER_COLOR;
-        config.leechers[this.uid] = true;
-        this.friends.onLeecherAdd(this);
-      }
-
-      this.toggleModal();
+      config.configWrite(color);
     }
   }
 }
