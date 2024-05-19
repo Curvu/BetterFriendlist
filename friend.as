@@ -52,6 +52,8 @@ package {
       this.is_ignored = is_ignored;
       this.highlight = highlight;
       this.friends = friends;
+
+      this.btns = [null];
     }
 
     public function get row() : Sprite {
