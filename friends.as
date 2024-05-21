@@ -89,12 +89,15 @@ package {
       var items:Array = null;
       var idx:int = 0;
 
+      // Remove the color picker and keyboard if leaving the all tab
       if(tab != TAB_ALL) {
+        if(this.chooseColor.stage) this.header_section.removeChild(this.chooseColor);
         if(this.keyboard.stage) this.header_section.removeChild(this.keyboard);
         this.filter = "";
         this.filter_text.text = "";
       }
 
+      // Remove the color picker if it's not the quick list
       if(tab != TAB_QUICK && this.pickColor.stage) this.header_section.removeChild(this.pickColor);
       else if(tab == TAB_QUICK && !this.pickColor.stage) {
         // remove the childs from the color picker
@@ -115,6 +118,7 @@ package {
         this.header_section.addChild(this.pickColor);
       }
 
+      // ---
       if(tab > TAB_IGNORED) tab = int(TAB_ALL);
       if(tab != this._tab || !this._init) {
         this.header_btns[this._tab].toggled = false;
@@ -157,9 +161,14 @@ package {
       if(!this.circle.stage) this.header_section.addChild(this.circle);
 
       if(this.tab == TAB_ALL) {
-        this._online.htmlText = "<b>" + num + "</b><font color=\"#CECED7\">/" + (this.list.length - this.list_request.length - this.list_ignored.length) + "</font> ";
+        this._online.htmlText = "<b>" + num + "</b><font color=\"#CECED7\">/" + (this.list.length - this.list_request.length - this.list_ignored.length) + "</font>";
+        this._online.x = 305;
       } else {
         this._online.htmlText = "";
+        if(this.tab == TAB_QUICK) {
+          this._online.htmlText = "<font color=\"#CECED7\">"+this.list_colors[config.cfg.active_color].length+"</font>";
+          this._online.x = 335;
+        }
         if(this.circle.stage) this.header_section.removeChild(this.circle);
       }
 
@@ -191,13 +200,9 @@ package {
       else if(config.favs[friend.uid]) this.list_fav.push(friend);
       else this.list_default.push(friend);
 
-      if(config.red[friend.uid]) this.list_colors.red.push(friend);
-      if(config.orange[friend.uid]) this.list_colors.orange.push(friend);
-      if(config.yellow[friend.uid]) this.list_colors.yellow.push(friend);
-      if(config.green[friend.uid]) this.list_colors.green.push(friend);
-      if(config.cyan[friend.uid]) this.list_colors.cyan.push(friend);
-      if(config.blue[friend.uid]) this.list_colors.blue.push(friend);
-      if(config.purple[friend.uid]) this.list_colors.purple.push(friend);
+      for each (var color:String in config.colors)
+        if(config[color][friend.uid])
+          this.list_colors[color].push(friend);
 
       if(is_online) ++this.online;
       else if(is_request && can_accept) {
@@ -400,7 +405,6 @@ package {
         // calculate the x position of the color button based on the width of the previous button
         var new_x:int = i > 0 ? this.color_btns[i-1].width + this.color_btns[i-1].x + 5 : 368+8;
         this.color_btns.push(new ColorBtn(5, config.colors[i], new_x, 30));
-        this.color_btns[i].toggled = config.cfg.active_color == config.colors[i];
         this.color_btns[i].addEventListener(MouseEvent.CLICK, this["changeColor" + config.colors[i].charAt(0).toUpperCase() + config.colors[i].slice(1)]);
       }
 
@@ -460,9 +464,9 @@ package {
 
     private function buildHeaderItems() : void {
       var all:Array = [
-        new KeyboardBtn(145, 13, ADD_FRIEND, 1, 30, true),
-        new KeyboardBtn(50, 13, "SEARCH", 147, 30, true),
-        new KeyboardBtn(38, 13, "COLOR", 198, 30, true),
+        new KeyboardBtn(125, 13, ADD_FRIEND, 1, 30, true),
+        new KeyboardBtn(60, 13, "SEARCH", 127, 30, true),
+        new KeyboardBtn(48, 13, "COLOR", 188, 30, true),
         new KeyboardBtn(14, 13, "?", 237, 30, true),
         renderer.text(268, 28, TEXT_FORMAT_HEADERS, "left", true, config.msg.INVITE),
         renderer.text(316, 28, TEXT_FORMAT_HEADERS, "left", true, config.msg.JOIN)
@@ -491,7 +495,7 @@ package {
 
       var ignored:Array = [
         renderer.text(1, 28, TEXT_FORMAT_HEADERS, "left", true, "IGNORED PLAYERS"),
-        new KeyboardBtn(93, 13, "ADD IGNORED", 263, 30, false)
+        new KeyboardBtn(93, 13, "ADD IGNORED", 263, 30, true)
       ];
       this.header_items[TAB_IGNORED] = ignored;
 
@@ -546,11 +550,18 @@ package {
     }
 
     private function onPickColor() : void {
-      if(!this.chooseColor.stage) this.header_section.addChild(this.chooseColor);
-      else this.header_section.removeChild(this.chooseColor);
+      if(this.keyboard.stage) this.header_section.removeChild(this.keyboard);
+      if(!this.chooseColor.stage) {
+        this.header_section.addChild(this.chooseColor);
+        for (var i:int = 0; i < 7; i++) {
+          this.color_btns[i].toggled = config.cfg.active_color == config.colors[i];
+          this.color_btns[i].x = i > 0 ? this.color_btns[i-1].width + this.color_btns[i-1].x + 5 : 368+8;
+        }
+      } else this.header_section.removeChild(this.chooseColor);
     }
 
     private function onKeyboard() : void {
+      if(this.chooseColor.stage) this.header_section.removeChild(this.chooseColor);
       if(!this.keyboard.stage) this.header_section.addChild(this.keyboard);
       else this.header_section.removeChild(this.keyboard);
     }
@@ -574,10 +585,14 @@ package {
 
     private function onClearQuickList() : void {
       var color:String = config.cfg.active_color;
-      while (0 < this.list_colors[color].length)
-        this.list_colors[color].onQuickList();
-
+      config[color] = {};
       config.configWrite(color);
+
+      for each (var f:Friend in this.list_colors[color])
+        f.refreshColors();
+
+      this.list_colors[color].splice(0);
+      this.onSortTimerComplete();
     }
 
     private function onAcceptAll() : void {
@@ -865,11 +880,11 @@ package {
       for (var i:int = 0; i < 7; i++) {
         if (i != 0) {
           this.color_btns[i].toggled = false;
-          this.color_pick_btns[i].toggled = false;
+          if (this.color_pick_btns[i]) this.color_pick_btns[i].toggled = false;
         }
       }
       this.color_btns[0].toggled = !this.color_btns[0].toggled;
-      this.color_pick_btns[0].toggled = !this.color_pick_btns[0].toggled;
+      if (this.color_pick_btns[0]) this.color_pick_btns[0].toggled = !this.color_pick_btns[0].toggled;
       config.cfg.active_color = "red";
       config.configWrite("active_color");
       this.updateQuickListColor();
@@ -880,11 +895,11 @@ package {
       for (var i:int = 0; i < 7; i++) {
         if (i != 1) {
           this.color_btns[i].toggled = false;
-          this.color_pick_btns[i].toggled = false;
+          if (this.color_pick_btns[i]) this.color_pick_btns[i].toggled = false;
         }
       }
       this.color_btns[1].toggled = !this.color_btns[1].toggled;
-      this.color_pick_btns[1].toggled = !this.color_pick_btns[1].toggled;
+      if (this.color_pick_btns[1]) this.color_pick_btns[1].toggled = !this.color_pick_btns[1].toggled;
       config.cfg.active_color = "orange";
       config.configWrite("active_color");
       this.updateQuickListColor();
@@ -895,11 +910,11 @@ package {
       for (var i:int = 0; i < 7; i++) {
         if (i != 2) {
           this.color_btns[i].toggled = false;
-          this.color_pick_btns[i].toggled = false;
+          if (this.color_pick_btns[i]) this.color_pick_btns[i].toggled = false;
         }
       }
       this.color_btns[2].toggled = !this.color_btns[2].toggled;
-      this.color_pick_btns[2].toggled = !this.color_pick_btns[2].toggled;
+      if (this.color_pick_btns[2]) this.color_pick_btns[2].toggled = !this.color_pick_btns[2].toggled;
       config.cfg.active_color = "yellow";
       config.configWrite("active_color");
       this.updateQuickListColor();
@@ -910,11 +925,11 @@ package {
       for (var i:int = 0; i < 7; i++) {
         if (i != 3) {
           this.color_btns[i].toggled = false;
-          this.color_pick_btns[i].toggled = false;
+          if (this.color_pick_btns[i]) this.color_pick_btns[i].toggled = false;
         }
       }
       this.color_btns[3].toggled = !this.color_btns[3].toggled;
-      this.color_pick_btns[3].toggled = !this.color_pick_btns[3].toggled;
+      if (this.color_pick_btns[3]) this.color_pick_btns[3].toggled = !this.color_pick_btns[3].toggled;
       config.cfg.active_color = "green";
       config.configWrite("active_color");
       this.updateQuickListColor();
@@ -925,11 +940,11 @@ package {
       for (var i:int = 0; i < 7; i++) {
         if (i != 4) {
           this.color_btns[i].toggled = false;
-          this.color_pick_btns[i].toggled = false;
+          if (this.color_pick_btns[i]) this.color_pick_btns[i].toggled = false;
         }
       }
       this.color_btns[4].toggled = !this.color_btns[4].toggled;
-      this.color_pick_btns[4].toggled = !this.color_pick_btns[4].toggled;
+      if (this.color_pick_btns[4]) this.color_pick_btns[4].toggled = !this.color_pick_btns[4].toggled;
       config.cfg.active_color = "cyan";
       config.configWrite("active_color");
       this.updateQuickListColor();
@@ -940,11 +955,11 @@ package {
       for (var i:int = 0; i < 7; i++) {
         if (i != 5) {
           this.color_btns[i].toggled = false;
-          this.color_pick_btns[i].toggled = false;
+          if (this.color_pick_btns[i]) this.color_pick_btns[i].toggled = false;
         }
       }
       this.color_btns[5].toggled = !this.color_btns[5].toggled;
-      this.color_pick_btns[5].toggled = !this.color_pick_btns[5].toggled;
+      if (this.color_pick_btns[5]) this.color_pick_btns[5].toggled = !this.color_pick_btns[5].toggled;
       config.cfg.active_color = "blue";
       config.configWrite("active_color");
       this.updateQuickListColor();
@@ -955,11 +970,11 @@ package {
       for (var i:int = 0; i < 7; i++) {
         if (i != 6) {
           this.color_btns[i].toggled = false;
-          this.color_pick_btns[i].toggled = false;
+          if (this.color_pick_btns[i]) this.color_pick_btns[i].toggled = false;
         }
       }
       this.color_btns[6].toggled = !this.color_btns[6].toggled;
-      this.color_pick_btns[6].toggled = !this.color_pick_btns[6].toggled;
+      if (this.color_pick_btns[6]) this.color_pick_btns[6].toggled = !this.color_pick_btns[6].toggled;
       config.cfg.active_color = "purple";
       config.configWrite("active_color");
       this.updateQuickListColor();
@@ -1003,7 +1018,8 @@ package {
 
       for (var i:int = 0; i < 7; i++) {
         this.color_btns[i].x = i > 0 ? this.color_btns[i-1].width + this.color_btns[i-1].x + 5 : 368+8;
-        this.color_pick_btns[i].x = i > 0 ? this.color_pick_btns[i-1].width + this.color_pick_btns[i-1].x + 5 : 140+8;
+        if (this.color_pick_btns[i])
+          this.color_pick_btns[i].x = i > 0 ? this.color_pick_btns[i-1].width + this.color_pick_btns[i-1].x + 5 : 140+8;
       }
 
       for each (var f:Friend in this.render_list) {

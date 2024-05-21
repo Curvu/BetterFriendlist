@@ -37,6 +37,8 @@ package {
     public var btnFavorite:icnbtn;
     public var btnAccept:txtbtn;
 
+    private var colors_in:Array = [];
+
     public function Friend(uid:String, name:String, is_online:Boolean, world:String, rank:String, can_join:Boolean, is_request:Boolean, can_accept:Boolean, can_invite:Boolean, team_pvp_enabled:Boolean, is_ignored:Boolean, highlight:Boolean, friends:Friends) {
       super();
       this.uid = uid;
@@ -247,6 +249,7 @@ package {
     private function buildRow() : void {
       this.buildCoreBtns();
       this.buildGroupBtns();
+      this.buildColors();
 
       this.bg = renderer.rectangle(new Shape(), 2, 0, 353, 37, renderer.GRAY_28, 1);
       this._row = renderer.rectangle(new Sprite(), 0, 0, 2, 37, renderer.GRAY_38, 1);
@@ -269,6 +272,9 @@ package {
 
       this._row.addChild(this.btnQuickList);
       this._row.addChild(this.btnFavorite);
+
+      for each(var btn:ColorBtn in this.colors_in)
+        this._row.addChild(btn);
     }
 
     private function buildCoreBtns() : void {
@@ -279,9 +285,9 @@ package {
       this.btnInvite.x = 270;
       this.btnInvite.y = 5;
 
-      // if(!this.can_join) this.btnJoin.disabled = true;
-      // else this.btnJoin.addEventListener(MouseEvent.CLICK,this.onJoin);
-      this.btnJoin.addEventListener(MouseEvent.CLICK,this.onJoin);
+      if(!this.can_join) this.btnJoin.disabled = true;
+      else this.btnJoin.addEventListener(MouseEvent.CLICK,this.onJoin);
+      // this.btnJoin.addEventListener(MouseEvent.CLICK,this.onJoin);
 
       this.btnInvite.addEventListener(MouseEvent.CLICK,this.onInvite);
 
@@ -312,16 +318,31 @@ package {
       this.btnQuickList.addEventListener(MouseEvent.CLICK, this.onQuickList);
     }
 
+    private function buildColors() : void {
+      var i:int = 0;
+      // calculate the width of the name
+      var more:int = this._name.width + this._name.x - 7;
+      for each(var clr:String in config.colors)
+        if(config[clr][this.uid])
+          this.colors_in.push(new ColorBtn(5, clr, (++i * 15) + more, 11));
+    }
+
     public function updateQuickListBtn() : void {
       var color:String = config.cfg.active_color;
+      this.btnQuickList.toggled = !!config[color][this.uid];
+    }
 
-      if(color == "red" && config.red[this.uid]) this.btnQuickList.toggled = true;
-      else if(color == "orange" && config.orange[this.uid]) this.btnQuickList.toggled = true;
-      else if(color == "yellow" && config.yellow[this.uid]) this.btnQuickList.toggled = true;
-      else if(color == "green" && config.green[this.uid]) this.btnQuickList.toggled = true;
-      else if(color == "cyan" && config.cyan[this.uid]) this.btnQuickList.toggled = true;
-      else if(color == "blue" && config.blue[this.uid]) this.btnQuickList.toggled = true;
-      else if(color == "purple" && config.purple[this.uid]) this.btnQuickList.toggled = true;
+    public function refreshColors() : void {
+      for each(var btn:ColorBtn in this.colors_in)
+        this._row.removeChild(btn);
+
+      this.colors_in = [];
+      this.buildColors();
+
+      for each(var btn:ColorBtn in this.colors_in)
+        this._row.addChild(btn);
+
+      this.updateQuickListBtn();
     }
 
     /* ------------------- */
@@ -333,8 +354,8 @@ package {
     }
 
     public function onJoin() : void {
-      ExternalInterface.call("OnJoinWorld", this.uid);
-      // if(this.can_join) ExternalInterface.call("OnJoinWorld",this.uid);
+      // ExternalInterface.call("OnJoinWorld", this.uid);
+      if(this.can_join) ExternalInterface.call("OnJoinWorld",this.uid);
     }
 
     public function onAccept() : void {
@@ -358,41 +379,20 @@ package {
 
     public function onQuickList() : void {
       var color:String = config.cfg.active_color;
-      var previous:Boolean;
-
-      if(color == "red") previous = !!config.red[this.uid];
-      else if(color == "orange") previous = !!config.orange[this.uid];
-      else if(color == "yellow") previous = !!config.yellow[this.uid];
-      else if(color == "green") previous = !!config.green[this.uid];
-      else if(color == "cyan") previous = !!config.cyan[this.uid];
-      else if(color == "blue") previous = !!config.blue[this.uid];
-      else if(color == "purple") previous = !!config.purple[this.uid];
+      var previous:Boolean = !!config[color][this.uid];
 
       this.btnQuickList.toggled = !previous;
 
       if(previous) { // If in list - remove it
-        if(color == "red") config.red[this.uid] = null;
-        else if(color == "orange") config.orange[this.uid] = null;
-        else if(color == "yellow") config.yellow[this.uid] = null;
-        else if(color == "green") config.green[this.uid] = null;
-        else if(color == "cyan") config.cyan[this.uid] = null;
-        else if(color == "blue") config.blue[this.uid] = null;
-        else if(color == "purple") config.purple[this.uid] = null;
-
+        config[color][this.uid] = null;
         this.friends.onQuickListRemove(this);
       } else {
-        if(color == "red") config.red[this.uid] = true;
-        else if(color == "orange") config.orange[this.uid] = true;
-        else if(color == "yellow") config.yellow[this.uid] = true;
-        else if(color == "green") config.green[this.uid] = true;
-        else if(color == "cyan") config.cyan[this.uid] = true;
-        else if(color == "blue") config.blue[this.uid] = true;
-        else if(color == "purple") config.purple[this.uid] = true;
-
+        config[color][this.uid] = true;
         this.friends.onQuickListAdd(this);
       }
 
       config.configWrite(color);
+      this.refreshColors();
     }
   }
 }
