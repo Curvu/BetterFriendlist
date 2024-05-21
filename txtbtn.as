@@ -8,8 +8,6 @@ package {
   import flash.text.TextFormat;
   
   public class txtbtn extends Sprite {
-    public static const ENV:Boolean = abi.DEBUG > 2;
-
     public static const CLICK_SOUND:String = "Play_ui_button_select";
     private static const TEXT_FORMAT_DEFAULT:TextFormat = new TextFormat("Open Sans",9,16250871,false,false,false,false,false,"center");
     public var format:TextFormat;
@@ -47,7 +45,6 @@ package {
       this.bg.transform.colorTransform = this.color_idle;
       this.x = x;
       this.y = y;
-      if(ENV) renderer.outline(this,0,0,w,h,16711935,1);
     }
 
     public function get count() : int {

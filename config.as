@@ -1,10 +1,9 @@
 package {
   import flash.external.ExternalInterface;
 
-  public class abi {
-    public static const MOD_NAME:String = "ayu-friends";
+  public class config {
+    public static const MOD_NAME:String = "betterfriendlist";
     public static const FILE_NAME:String = "friendslist.swf";
-    public static const DEBUG:int = 0;
 
     public static var M:*;
 
@@ -22,14 +21,16 @@ package {
       "max_rows":16,
       "drop_nameless":true,
       "default_tab":0,
+      "active_color":"red",
       "vertical_offset":0
     };
 
     private static const convar_types:Object = {
-      "default_tab":[CType.UINT,0,3],
+      "default_tab":[CType.UINT, 0, 3],
+      "active_color":[CType.STRING],
       "drop_namepless":[CType.BOOL],
-      "vertical_offset":[CType.INT,-1000,1000],
-      "max_rows":[CType.UINT,1,25]
+      "vertical_offset":[CType.INT, -1000, 1000],
+      "max_rows":[CType.UINT, 1, 25]
     };
 
     public static var msg:Object = {
@@ -45,13 +46,19 @@ package {
       "ACCEPT":IggyFunctions.translate("$FriendRequest_Accept")
     };
 
-    public static var favs:Object = {};
-    public static var alts:Object = {};
-    public static var quick:Object = {};
-    public static var cleaners:Object = {};
-    public static var leechers:Object = {};
+    public static const colors:Array = ["red", "orange", "yellow", "green", "cyan", "blue", "purple"];
 
-    public function abi() {
+    public static var favs:Object = {};
+
+    public static var red:Object = {};
+    public static var orange:Object = {};
+    public static var yellow:Object = {};
+    public static var green:Object = {};
+    public static var cyan:Object = {};
+    public static var blue:Object = {};
+    public static var purple:Object = {};
+
+    public function config() {
       super();
     }
 
@@ -87,18 +94,27 @@ package {
       } else if(key == "favorites") {
         arr = processConfigList(val);
         if(arr) favs = arrayToObject(arr);
-      } else if(key == "alts") {
+      } else if (key == "red") {
         arr = processConfigList(val);
-        if(arr) alts = arrayToObject(arr);
-      } else if(key == "quick_list") {
+        if(arr) red = arrayToObject(arr);
+      } else if (key == "orange") {
         arr = processConfigList(val);
-        if(arr) quick = arrayToObject(arr);
-      } else if(key == "list_cleaners") {
+        if(arr) orange = arrayToObject(arr);
+      } else if (key == "yellow") {
         arr = processConfigList(val);
-        if(arr) cleaners = arrayToObject(arr);
-      } else if(key == "list_leechers") {
+        if(arr) yellow = arrayToObject(arr);
+      } else if (key == "green") {
         arr = processConfigList(val);
-        if(arr) leechers = arrayToObject(arr);
+        if(arr) green = arrayToObject(arr);
+      } else if (key == "cyan") {
+        arr = processConfigList(val);
+        if(arr) cyan = arrayToObject(arr);
+      } else if (key == "blue") {
+        arr = processConfigList(val);
+        if(arr) blue = arrayToObject(arr);
+      } else if (key == "purple") {
+        arr = processConfigList(val);
+        if(arr) purple = arrayToObject(arr);
       }
     }
 
@@ -129,33 +145,39 @@ package {
           out = String(val.toString());
         }
       } else if(key == "favorites") out = "[" + objectToArray(favs).join(",") + "]";
-      else if(key == "alts") out = "[" + objectToArray(alts).join(",") + "]";
-      else if(key == "quick_list") out = "[" + objectToArray(quick).join(",") + "]";
-      else if(key == "list_cleaners") out = "[" + objectToArray(cleaners).join(",") + "]";
-      else if(key == "list_leechers") out = "[" + objectToArray(leechers).join(",") + "]";
+      else if(key == "red") out = "[" + objectToArray(red).join(",") + "]";
+      else if(key == "orange") out = "[" + objectToArray(orange).join(",") + "]";
+      else if(key == "yellow") out = "[" + objectToArray(yellow).join(",") + "]";
+      else if(key == "green") out = "[" + objectToArray(green).join(",") + "]";
+      else if(key == "cyan") out = "[" + objectToArray(cyan).join(",") + "]";
+      else if(key == "blue") out = "[" + objectToArray(blue).join(",") + "]";
+      else if(key == "purple") out = "[" + objectToArray(purple).join(",") + "]";
 
-      if(out != "") ExternalInterface.call("UIComponent.OnSaveConfig",FILE_NAME,MOD_NAME + ":" + key.replace("_","-"),out);
+      if(out != "")
+        ExternalInterface.call("UIComponent.OnSaveConfig", FILE_NAME, MOD_NAME + ":" + key.replace("_","-"), out);
     }
 
     private static function processConfigList(val:String) : Array {
       val = val.split(" ").join("");
-      if(val.charAt(0) == "[" && val.charAt(val.length - 1) == "]" && val != "[]") return val.slice(1,-1).split(",");
+      if(val.charAt(0) == "[" && val.charAt(val.length - 1) == "]" && val != "[]")
+        return val.slice(1,-1).split(",");
       return new Array();
     }
 
     private static function arrayToObject(arr:Array) : Object {
       var obj:Object = {};
       var idx:int = int(arr.length);
-      while(idx--) obj[Number(uint(Number(arr.pop())) ^ 77777777 ^ 48813).toString()] = true;
+      while(idx--)
+        obj[Number(uint(Number(arr.pop())) ^ 77777777 ^ 48813).toString()] = true;
       return obj;
     }
 
     private static function objectToArray(obj:Object) : Array {
       var key:* = null;
       var arr:Array = [];
-      for(key in obj) {
-        if(obj[key]) arr.push(Number(uint(Number(key)) ^ 48813 ^ 77777777).toString());
-      }
+      for(key in obj)
+        if(obj[key])
+          arr.push(Number(uint(Number(key)) ^ 48813 ^ 77777777).toString());
       return arr;
     }
 
@@ -164,8 +186,8 @@ package {
     }
 
     public static function getScrubberSize(num_friends:int, min_size:int) : int {
-      var max_size:int = abi.cfg.max_rows * 40;
-      if(num_friends <= abi.cfg.max_rows) return max_size;
+      var max_size:int = config.cfg.max_rows * 40;
+      if(num_friends <= config.cfg.max_rows) return max_size;
       return int(Math.max(min_size,Math.min(max_size,max_size - easeOutCirc(num_friends / 700) * max_size)));
     }
 
