@@ -10,6 +10,7 @@ package {
   import flash.utils.Timer;
 
   public class Friends {
+    // TODO: scroll bug when scroll and then switch color it will bug
     public static const TEXT_FORMAT_ONLINE:TextFormat = new TextFormat("Open Sans",11,16250871,false,false,false,false,false,"right");
     public static const TEXT_FORMAT_REQUESTS:TextFormat = new TextFormat("Open Sans",10,16201328,true);
     public static const TEXT_FORMAT_HEADERS:TextFormat = new TextFormat("Open Sans",9,4738417,false);
@@ -875,109 +876,48 @@ package {
     /* ---------------- */
     /*   COLOR EVENTS   */
     /* ---------------- */
-    private function changeColorRed() : void {
-      if (this.checkIfUnselected("red")) return;
+    private function changeColor(color:String, idx:int) : void {
+      if (this.checkIfUnselected(color)) return;
       for (var i:int = 0; i < 7; i++) {
-        if (i != 0) {
+        if (i != idx) {
           this.color_btns[i].toggled = false;
           if (this.color_pick_btns[i]) this.color_pick_btns[i].toggled = false;
         }
       }
-      this.color_btns[0].toggled = !this.color_btns[0].toggled;
-      if (this.color_pick_btns[0]) this.color_pick_btns[0].toggled = !this.color_pick_btns[0].toggled;
-      config.cfg.active_color = "red";
+      this.color_btns[idx].toggled = !this.color_btns[idx].toggled;
+      if (this.color_pick_btns[idx]) this.color_pick_btns[idx].toggled = !this.color_pick_btns[idx].toggled;
+      config.cfg.active_color = color;
       config.configWrite("active_color");
       this.updateQuickListColor();
+      this.container.y = 1;
+    }
+
+    private function changeColorRed() : void {
+      this.changeColor("red", 0);
     }
 
     private function changeColorOrange() : void {
-      if (this.checkIfUnselected("orange")) return;
-      for (var i:int = 0; i < 7; i++) {
-        if (i != 1) {
-          this.color_btns[i].toggled = false;
-          if (this.color_pick_btns[i]) this.color_pick_btns[i].toggled = false;
-        }
-      }
-      this.color_btns[1].toggled = !this.color_btns[1].toggled;
-      if (this.color_pick_btns[1]) this.color_pick_btns[1].toggled = !this.color_pick_btns[1].toggled;
-      config.cfg.active_color = "orange";
-      config.configWrite("active_color");
-      this.updateQuickListColor();
+      this.changeColor("orange", 1);
     }
 
     private function changeColorYellow() : void {
-      if (this.checkIfUnselected("yellow")) return;
-      for (var i:int = 0; i < 7; i++) {
-        if (i != 2) {
-          this.color_btns[i].toggled = false;
-          if (this.color_pick_btns[i]) this.color_pick_btns[i].toggled = false;
-        }
-      }
-      this.color_btns[2].toggled = !this.color_btns[2].toggled;
-      if (this.color_pick_btns[2]) this.color_pick_btns[2].toggled = !this.color_pick_btns[2].toggled;
-      config.cfg.active_color = "yellow";
-      config.configWrite("active_color");
-      this.updateQuickListColor();
+      this.changeColor("yellow", 2);
     }
 
     private function changeColorGreen() : void {
-      if (this.checkIfUnselected("green")) return;
-      for (var i:int = 0; i < 7; i++) {
-        if (i != 3) {
-          this.color_btns[i].toggled = false;
-          if (this.color_pick_btns[i]) this.color_pick_btns[i].toggled = false;
-        }
-      }
-      this.color_btns[3].toggled = !this.color_btns[3].toggled;
-      if (this.color_pick_btns[3]) this.color_pick_btns[3].toggled = !this.color_pick_btns[3].toggled;
-      config.cfg.active_color = "green";
-      config.configWrite("active_color");
-      this.updateQuickListColor();
+      this.changeColor("green", 3);
     }
 
     private function changeColorCyan() : void {
-      if (this.checkIfUnselected("cyan")) return;
-      for (var i:int = 0; i < 7; i++) {
-        if (i != 4) {
-          this.color_btns[i].toggled = false;
-          if (this.color_pick_btns[i]) this.color_pick_btns[i].toggled = false;
-        }
-      }
-      this.color_btns[4].toggled = !this.color_btns[4].toggled;
-      if (this.color_pick_btns[4]) this.color_pick_btns[4].toggled = !this.color_pick_btns[4].toggled;
-      config.cfg.active_color = "cyan";
-      config.configWrite("active_color");
-      this.updateQuickListColor();
+      this.changeColor("cyan", 4);
     }
 
     private function changeColorBlue() : void {
-      if (this.checkIfUnselected("blue")) return;
-      for (var i:int = 0; i < 7; i++) {
-        if (i != 5) {
-          this.color_btns[i].toggled = false;
-          if (this.color_pick_btns[i]) this.color_pick_btns[i].toggled = false;
-        }
-      }
-      this.color_btns[5].toggled = !this.color_btns[5].toggled;
-      if (this.color_pick_btns[5]) this.color_pick_btns[5].toggled = !this.color_pick_btns[5].toggled;
-      config.cfg.active_color = "blue";
-      config.configWrite("active_color");
-      this.updateQuickListColor();
+      this.changeColor("blue", 5);
     }
 
     private function changeColorPurple() : void {
-      if (this.checkIfUnselected("purple")) return;
-      for (var i:int = 0; i < 7; i++) {
-        if (i != 6) {
-          this.color_btns[i].toggled = false;
-          if (this.color_pick_btns[i]) this.color_pick_btns[i].toggled = false;
-        }
-      }
-      this.color_btns[6].toggled = !this.color_btns[6].toggled;
-      if (this.color_pick_btns[6]) this.color_pick_btns[6].toggled = !this.color_pick_btns[6].toggled;
-      config.cfg.active_color = "purple";
-      config.configWrite("active_color");
-      this.updateQuickListColor();
+      this.changeColor("purple", 6);
     }
 
     private function inviteColorRed() : void {
