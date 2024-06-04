@@ -10,7 +10,6 @@ package {
   import flash.utils.Timer;
 
   public class Friends {
-    // TODO: scroll bug when scroll and then switch color it will bug
     public static const TEXT_FORMAT_ONLINE:TextFormat = new TextFormat("Open Sans",11,16250871,false,false,false,false,false,"right");
     public static const TEXT_FORMAT_REQUESTS:TextFormat = new TextFormat("Open Sans",10,16201328,true);
     public static const TEXT_FORMAT_HEADERS:TextFormat = new TextFormat("Open Sans",9,4738417,false);
