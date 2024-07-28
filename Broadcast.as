@@ -1,15 +1,15 @@
 package {
-  import _kiwi.Core.UIComponent;
   import flash.external.ExternalInterface;
   import flash.text.TextField;
+  import flash.display.MovieClip;
 
-  public class Broadcast extends UIComponent {
+  public class Broadcast extends MovieClip {
     public var debugline:TextField;
     private var friends:Friends;
 
     public function Broadcast() {
       super();
-      ExternalInterface.addCallback("loadModConfiguration",this.onLoadModConfiguration);
+      ExternalInterface.addCallback("loadModConfiguration", this.onLoadModConfiguration);
       config.M = this;
       this.debugline.x = 400;
       this.debugline.text = "";
@@ -29,7 +29,7 @@ package {
       } else if(key == "betterfriendlist:vertical-offset") {
         this.friends.applyOffset(int(Number(val)));
       } else if(key == "betterfriendlist:max-rows") {
-        this.friends.updateLayoutExternal();
+        this.friends.onSortTimerComplete();
       }
     }
 
@@ -39,7 +39,7 @@ package {
       this.debugline.text = lines.join("\n") + "\n" + str;
     }
 
-    public function get msg() : void {
+    public function get msg() : String {
       return this.debugline.text;
     }
 
@@ -48,15 +48,15 @@ package {
     }
 
     private function addFriend(uid:String, name:String, isOnline:Boolean, world:String, rank:String, canJoin:Boolean, isRequest:Boolean, canAccept:Boolean, canInvite:Boolean, teamPvpEnabled:Boolean) : void {
-      this.friends.add(uid,name,isOnline,world,rank,canJoin,isRequest,canAccept,canInvite,teamPvpEnabled);
+      this.friends.add(uid, name, isOnline, world, rank, canJoin, isRequest, canAccept, canInvite);
     }
 
     private function addIgnored(uid:String, name:String) : void {
-      this.friends.add(uid,name,false,"","",false,false,false,false,false,true);
+      this.friends.add(uid,name,false,"","",false,false,false,false,true);
     }
 
     private function updateFriend(uid:String, name:String, isOnline:Boolean, world:String, rank:String, canJoin:Boolean, isRequest:Boolean, canAccept:Boolean, canInvite:Boolean, teamPvpEnabled:Boolean) : void {
-      this.friends.update(uid,name,isOnline,world,rank,canJoin,isRequest,canAccept,canInvite,teamPvpEnabled);
+      this.friends.update(uid,name,isOnline,world,rank,canJoin,isRequest,canAccept,canInvite,false);
     }
 
     private function removeFriend(uid:String) : void {

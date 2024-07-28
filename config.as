@@ -18,11 +18,11 @@ package {
     };
 
     public static var cfg:Object = {
-      "max_rows":16,
-      "drop_nameless":true,
-      "default_tab":0,
-      "active_color":"red",
-      "vertical_offset":0
+      "max_rows": 16,
+      "drop_nameless": true,
+      "default_tab": 0,
+      "active_color": "red",
+      "vertical_offset": 0
     };
 
     private static const convar_types:Object = {
@@ -34,7 +34,7 @@ package {
     };
 
     public static var msg:Object = {
-      "MASTERY_RANK_FORMAT":IggyFunctions.translate("$MasteryRankFormat").substring(0,IggyFunctions.translate("$MasteryRankFormat").indexOf("{0}")),
+      "MASTERY_RANK_FORMAT":IggyFunctions.translate("$MasteryRankFormat").substring(0, IggyFunctions.translate("$MasteryRankFormat").indexOf("{0}")),
       "REQUEST_OUTGOING":IggyFunctions.translate("$FriendRequest_WaitOnOther"),
       "REQUEST_INCOMING":IggyFunctions.translate("$FriendRequest_WaitOnAccept"),
       "FRIEND":IggyFunctions.translate("$geodian_circle_name"),
@@ -46,10 +46,15 @@ package {
       "ACCEPT":IggyFunctions.translate("$FriendRequest_Accept")
     };
 
+    public static const TAB_ALL:uint = 0;
+    public static const TAB_FAV:uint = 1;
+    public static const TAB_QUICK:uint = 2;
+    public static const TAB_REQUEST:uint = 3;
+    public static const TAB_IGNORED:uint = 4;
+
     public static const colors:Array = ["red", "orange", "yellow", "green", "cyan", "blue", "purple"];
 
     public static var favs:Object = {};
-
     public static var red:Object = {};
     public static var orange:Object = {};
     public static var yellow:Object = {};
@@ -63,7 +68,7 @@ package {
     }
 
     public static function onLoadModConfig(key:String, val:String) : void {
-      if(key.indexOf(MOD_NAME + ":") == 0) configRead(key.substring(MOD_NAME.length + 1).replace("-","_"),val);
+      if(key.indexOf(MOD_NAME + ":") == 0) configRead(key.substring(MOD_NAME.length + 1).replace("-","_"), val);
     }
 
     private static function configRead(key:String, val:String) : void {
@@ -94,27 +99,14 @@ package {
       } else if(key == "favorites") {
         arr = processConfigList(val);
         if(arr) favs = arrayToObject(arr);
-      } else if (key == "red") {
-        arr = processConfigList(val);
-        if(arr) red = arrayToObject(arr);
-      } else if (key == "orange") {
-        arr = processConfigList(val);
-        if(arr) orange = arrayToObject(arr);
-      } else if (key == "yellow") {
-        arr = processConfigList(val);
-        if(arr) yellow = arrayToObject(arr);
-      } else if (key == "green") {
-        arr = processConfigList(val);
-        if(arr) green = arrayToObject(arr);
-      } else if (key == "cyan") {
-        arr = processConfigList(val);
-        if(arr) cyan = arrayToObject(arr);
-      } else if (key == "blue") {
-        arr = processConfigList(val);
-        if(arr) blue = arrayToObject(arr);
-      } else if (key == "purple") {
-        arr = processConfigList(val);
-        if(arr) purple = arrayToObject(arr);
+      } else {
+        for each(var color:String in colors) {
+          if(key == color) {
+            arr = processConfigList(val);
+            if(arr) config[color] = arrayToObject(arr);
+            break;
+          }
+        }
       }
     }
 
@@ -145,13 +137,14 @@ package {
           out = String(val.toString());
         }
       } else if(key == "favorites") out = "[" + objectToArray(favs).join(",") + "]";
-      else if(key == "red") out = "[" + objectToArray(red).join(",") + "]";
-      else if(key == "orange") out = "[" + objectToArray(orange).join(",") + "]";
-      else if(key == "yellow") out = "[" + objectToArray(yellow).join(",") + "]";
-      else if(key == "green") out = "[" + objectToArray(green).join(",") + "]";
-      else if(key == "cyan") out = "[" + objectToArray(cyan).join(",") + "]";
-      else if(key == "blue") out = "[" + objectToArray(blue).join(",") + "]";
-      else if(key == "purple") out = "[" + objectToArray(purple).join(",") + "]";
+      else {
+        for each(var color:String in colors) {
+          if(key == color) {
+            out = "[" + objectToArray(config[color]).join(",") + "]";
+            break;
+          }
+        }
+      }
 
       if(out != "")
         ExternalInterface.call("UIComponent.OnSaveConfig", FILE_NAME, MOD_NAME + ":" + key.replace("_","-"), out);
@@ -187,7 +180,7 @@ package {
 
     public static function getScrubberSize(num_friends:int, min_size:int) : int {
       var max_size:int = config.cfg.max_rows * 40;
-      if(num_friends <= config.cfg.max_rows) return max_size;
+      if(num_friends <= config.cfg.max_rows) return ((num_friends > 0 ? num_friends : 1) * 39) - 3;
       return int(Math.max(min_size,Math.min(max_size,max_size - easeOutCirc(num_friends / 700) * max_size)));
     }
 
@@ -198,11 +191,18 @@ package {
     }
 
     public static function clamp(p:Number, min:Number, max:Number) : Number {
-      return Math.max(min,Math.min(max,p));
+      return Math.max(min, Math.min(max, p));
     }
 
     public static function within(min:Number, p:Number, max:Number) : Boolean {
       return min <= p && p <= max;
+    }
+
+    public static function darken(color:uint, amount:Number) : uint {
+      var r:uint = (color >> 16) & 0xFF;
+      var g:uint = (color >> 8) & 0xFF;
+      var b:uint = color & 0xFF;
+      return ((r * amount) << 16) | ((g * amount) << 8) | (b * amount);
     }
   }
 }

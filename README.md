@@ -1,10 +1,10 @@
-# ayu-friends-plus
+# BetterFriendlist
 
-Ayu friends plus is an extension of the ayu original mod wich has a lot of features and improvements.
+BetterFriendlist is an extension of the ayu original mod which has a lot of features and improvements.
 
 ## Installation
-1. Download the latest version of the mod from the latest [release](https://github.com/Curvu/ayu-friends-plus/releases/latest).
-2. Place the `ayu Friends.tmod` on the mods folder and the `ayu Friends.cfg` in `%appdata%/Trove/ModCfgs`
+1. Download the latest version of the mod from the latest [release](https://trovesaurus.com/mod=11073).
+2. Place the `BetterFriendlist.tmod` on the mods folder and the `BetterFriendlist.cfg` in `%appdata%/Trove/ModCfgs`
 
 ## Contributing
 1. Fork the repository.
@@ -14,14 +14,14 @@ Ayu friends plus is an extension of the ayu original mod wich has a lot of featu
 
 ---
 
-If you have any bug or suggestion, please [create an issue](https://github.com/Curvu/ayu-friends-plus/issues).
+If you have any bug or suggestion, please [create an issue](https://github.com/Curvu/betterfriendlist/issues).
 
 ## Features
-- Better looking
+- Better UI
 - Favorite friends
-- Alt account list (you need to click twice on favorite button to make it an alt account)
-- Quick invite list
-- Ship list (cleaners and leechers)
+- Search friends
+- Multiple lists that you allow inviting multiple friends at once
 
 ## Credits
 - ayu friends original creator, **abbie**
+- code improvements, **Geoflay**

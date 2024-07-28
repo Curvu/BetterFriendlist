@@ -1,4 +1,4 @@
-package {
+package components.buttons {
   import flash.display.Sprite;
   import flash.events.MouseEvent;
   import flash.external.ExternalInterface;
@@ -6,19 +6,13 @@ package {
 
   public class icnbtn extends Sprite {
     public static const COLOR_IDLE:ColorTransform = new ColorTransform(1,1,1,0.2,129,143,178);
-
     public static const COLOR_HOVER:ColorTransform = new ColorTransform(1,1,1,0.5,129,143,178);
-
     public static const COLOR_ACTIVE:ColorTransform = new ColorTransform(1,1,1,0.5,80,91,119);
-
     public static const COLOR_DISABLED:ColorTransform = new ColorTransform(1,1,1,0.75,15,15,27);
-
     public static const COLOR_WHITE:ColorTransform = new ColorTransform(1,1,1,1,255,255,255);
-
     public static const CLICK_SOUND:String = "Play_ui_button_select";
 
     private var _toggled:Boolean = false;
-
     private var _disabled:Boolean = false;
 
     private var toggled_color:ColorTransform;
@@ -71,25 +65,20 @@ package {
       }
     };
 
-    public function icnbtn(icon:*, w:int = 24, h:int = 24, bool:Boolean = false) {
+    public function icnbtn(icon:*, w:int = 24, h:int = 24, personalized_color:Boolean = false) {
       super();
-      renderer.rectangle(this,0,0,w,h,0,0);
+      renderer.rectangle(this, 0, 0, w, h, 0, 0);
       if(icon) {
         this.addChild(icon);
-        if(icon.width < w) {
-          icon.x = int(w / 2 - icon.width / 2 + 0.5);
-        }
-
-        if(icon.height < h) {
-          icon.y = int(h / 2 - icon.height / 2 + 0.5);
-        }
+        icon.x = (w - icon.width) / 2 + 0.5;
+        icon.y = (h - icon.height) / 2 + 0.5;
       }
 
       this.idle_color = COLOR_IDLE;
       this.toggled_color = COLOR_WHITE;
       this.hover_color = COLOR_HOVER;
       this.active_color = COLOR_ACTIVE;
-      if (bool) {
+      if (personalized_color) {
         this.idle_color = colors[config.cfg.active_color]["min"];
         this.hover_color = colors[config.cfg.active_color]["medium"];
         this.toggled_color = colors[config.cfg.active_color]["max"];
@@ -149,20 +138,20 @@ package {
       this.removeEventListener(MouseEvent.MOUSE_UP,this.onMouseUp);
     }
 
-    private function onMouseOver() : void {
+    private function onMouseOver(e:MouseEvent) : void {
       if(!this.toggled) this.transform.colorTransform = this.hover_color;
     }
 
-    private function onMouseOut() : void {
+    private function onMouseOut(e:MouseEvent) : void {
       if(!this.toggled) this.transform.colorTransform = this.idle_color;
     }
 
-    private function onMouseDown() : void {
+    private function onMouseDown(e:MouseEvent) : void {
       ExternalInterface.call("POST_SOUND_EVENT", CLICK_SOUND);
       this.transform.colorTransform = this.active_color;
     }
 
-    private function onMouseUp() : void {
+    private function onMouseUp(e:MouseEvent) : void {
       this.transform.colorTransform = !this.toggled ? this.hover_color : this.toggled_color;
     }
   }

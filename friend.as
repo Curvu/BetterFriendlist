@@ -6,16 +6,17 @@ package {
   import flash.text.TextField;
   import flash.text.TextFormat;
 
+  import components.buttons.*;
+  import components.colorpicker.ColorButton;
+
   public class Friend {
     public static const MASTERY_RANK_FORMAT:String = config.msg.MASTERY_RANK_FORMAT;
     public static const REQUEST_OUTGOING:String = config.msg.REQUEST_OUTGOING;
     public static const REQUEST_INCOMING:String = config.msg.REQUEST_INCOMING;
-    public static const TEXT_FORMAT_NAME:TextFormat = new TextFormat("Open Sans", 12, renderer.DEFAULT_NAME_COLOR, true);
-    public static const TEXT_FORMAT_WORLD:TextFormat = new TextFormat("Open Sans", 10, 13553367, false);
-    public static const TEXT_FORMAT_RANK:TextFormat = new TextFormat("Open Sans", 12, renderer.RANK_COLOR, true);
+
+    public var friends:Friends;
 
     private var _uid:String;
-    public var friends:Friends;
     public var bg:Shape;
     private var _name:TextField;
     private var _is_online:Shape;
@@ -25,9 +26,8 @@ package {
     private var _is_request:Boolean;
     private var _can_accept:Boolean;
     private var _can_invite:Boolean = true;
-    public var team_pvp_enabled:Boolean;
     private var _is_ignored:Boolean;
-    public var highlight:Boolean;
+
     private var _row:Sprite;
 
     // Buttons
@@ -35,11 +35,11 @@ package {
     public var btnInvite:icnbtn;
     public var btnQuickList:icnbtn;
     public var btnFavorite:icnbtn;
-    public var btnAccept:txtbtn;
+    public var btnAccept:icnbtn;
 
     private var colors_in:Array = [];
 
-    public function Friend(uid:String, name:String, is_online:Boolean, world:String, rank:String, can_join:Boolean, is_request:Boolean, can_accept:Boolean, can_invite:Boolean, team_pvp_enabled:Boolean, is_ignored:Boolean, highlight:Boolean, friends:Friends) {
+    public function Friend(uid:String, name:String, is_online:Boolean, world:String, rank:String, can_join:Boolean, is_request:Boolean, can_accept:Boolean, can_invite:Boolean, is_ignored:Boolean, friends:Friends) {
       super();
       this.uid = uid;
       this.name = name;
@@ -50,9 +50,7 @@ package {
       this.is_request = is_request;
       this.can_accept = can_accept;
       this.can_invite = can_invite;
-      this.team_pvp_enabled = team_pvp_enabled;
       this.is_ignored = is_ignored;
-      this.highlight = highlight;
       this.friends = friends;
     }
 
@@ -106,7 +104,10 @@ package {
     }
 
     public function set rank(rank:String) : void {
-      if(!this._rank) this._rank = renderer.text(23, 0, TEXT_FORMAT_RANK, "left", true);
+      if(!this._rank) {
+        this._rank = renderer.text("", 23, 0, 12, "left", -1, -1, false, true);
+        this._rank.textColor = renderer.RANK_COLOR;
+      }
       this._rank.text = rank.indexOf(MASTERY_RANK_FORMAT) == 0 ? rank.substring(MASTERY_RANK_FORMAT.length) : rank;
       if(this._name) this._name.x = 23 + int(Math.max(3, this._rank.width) + 0.5) - 3;
     }
@@ -117,7 +118,8 @@ package {
 
     public function set name(name:String) : void {
       if(!this._name) {
-        this._name = renderer.text(23,0,TEXT_FORMAT_NAME,"left",true);
+        this._name = renderer.text("", 23, 0, 12, "left", -1, -1, false, true);
+        this._name.textColor = renderer.DEFAULT_NAME_COLOR;
         this._name.mouseEnabled = true;
         this._name.addEventListener(MouseEvent.MOUSE_OVER, this.onNameMouseOver);
         this._name.addEventListener(MouseEvent.RIGHT_MOUSE_UP, this.onNameMouseUp);
@@ -136,27 +138,27 @@ package {
       return this._name.text;
     }
 
-    private function onNameMouseUp() : void {
+    private function onNameMouseUp(e:MouseEvent) : void {
       this._name.alpha = 1;
     }
 
-    private function onNameMouseOver() : void {
+    private function onNameMouseOver(e:MouseEvent) : void {
       this._name.alpha = 0.8;
     }
 
-    private function onNameRightMouseDown() : void {
+    private function onNameRightMouseDown(e:MouseEvent) : void {
       this._name.alpha = 0.3;
     }
 
-    private function onNameMouseDown() : void {
+    private function onNameMouseDown(e:MouseEvent) : void {
       this._name.alpha = 0.5;
     }
 
-    private function onNameMouseOut() : void {
+    private function onNameMouseOut(e:MouseEvent) : void {
       this._name.alpha = 1;
     }
 
-    private function onNameClick() : void {
+    private function onNameClick(e:MouseEvent) : void {
       if(!this.is_ignored) {
         ExternalInterface.call("POST_SOUND_EVENT", "Play_ui_btnon_select");
         ExternalInterface.call("OnWhisper", this.name);
@@ -174,9 +176,8 @@ package {
 
     public function set world(world:String) : void {
       if(!this._world) {
-        this._world = renderer.text(23,17,TEXT_FORMAT_WORLD,"",true);
-        this._world.width = 230;
-        this._world.height = 16;
+        this._world = renderer.text("", 23, 17, 10, "left", 230, 16);
+        this._world.textColor = 0xCECED7;
       }
       this._world.text = world;
     }
@@ -186,8 +187,11 @@ package {
     }
 
     public function set is_online(is_online:Boolean) : void {
-      if(!this._is_online) this._is_online = renderer.rectangle(new Shape(), 0, 0, 2, 37, renderer.GREEN, 1);
+      if(!this._is_online)
+        this._is_online = renderer.rectangle(new Shape(), 0, 0, 2, 37, renderer.GREEN, 1);
+      if(this._is_online.visible == is_online) return;
       this._is_online.visible = is_online;
+      this.refreshColors();
     }
 
     public function get is_online() : Boolean {
@@ -220,7 +224,9 @@ package {
       if(can_accept && this._can_accept != can_accept) {
         this.world = REQUEST_INCOMING;
         if(!this.btnAccept) {
-          this.btnAccept = new txtbtn(76,13,config.msg.ACCEPT,271,5);
+          this.btnAccept = new icnbtn(new IconAccept(), 28, 28);
+          this.btnAccept.x = 315;
+          this.btnAccept.y = 5;
           this.btnAccept.addEventListener(MouseEvent.CLICK, this.onAccept);
         }
         if(this._row) this._row.addChild(this.btnAccept);
@@ -246,17 +252,23 @@ package {
       this._is_ignored = is_ignored;
     }
 
+    public function set theme(theme:Boolean) : void {
+      this._row.removeChild(this.bg);
+      this.bg.graphics.clear();
+      this.bg = renderer.rectangle(new Shape(), 2, 0, 353, 37, theme ? renderer.GRAY_30 : renderer.GRAY_28, 1);
+      this._row.addChildAt(this.bg, 0);
+    }
+
     private function buildRow() : void {
       this.buildCoreBtns();
       this.buildGroupBtns();
       this.buildColors();
 
-      this.bg = renderer.rectangle(new Shape(), 2, 0, 353, 37, renderer.GRAY_28, 1);
+      this.bg = renderer.rectangle(new Shape(), 2, 0, 353, 37, renderer.GRAY_30, 1);
       this._row = renderer.rectangle(new Sprite(), 0, 0, 2, 37, renderer.GRAY_38, 1);
-      var group_container:Shape = renderer.rectangle(new Shape(), 2, 0, 17, 37, renderer.GRAY_22, 0.5);
+      var group_container:Shape = renderer.rectangle(new Shape(), 2, 0, 17, 37, renderer.GRAY_16, 0.5);
       this._row.addChild(this.bg);
       this._row.addChild(group_container);
-      this.bg.visible = false;
 
       this._row.width = 355;
       this._row.height = 37;
@@ -273,7 +285,7 @@ package {
       this._row.addChild(this.btnQuickList);
       this._row.addChild(this.btnFavorite);
 
-      for each(var btn:ColorBtn in this.colors_in)
+      for each(var btn:ColorButton in this.colors_in)
         this._row.addChild(btn);
     }
 
@@ -285,9 +297,9 @@ package {
       this.btnInvite.x = 270;
       this.btnInvite.y = 5;
 
-      if(!this.can_join) this.btnJoin.disabled = true;
-      else this.btnJoin.addEventListener(MouseEvent.CLICK,this.onJoin);
-      // this.btnJoin.addEventListener(MouseEvent.CLICK,this.onJoin);
+      // if(!this.can_join) this.btnJoin.disabled = true;
+      // else this.btnJoin.addEventListener(MouseEvent.CLICK,this.onJoin);
+      this.btnJoin.addEventListener(MouseEvent.CLICK,this.onJoin);
 
       this.btnInvite.addEventListener(MouseEvent.CLICK,this.onInvite);
 
@@ -320,29 +332,34 @@ package {
 
     private function buildColors() : void {
       var i:int = 0;
-      // calculate the width of the name
-      var more:int = this._name.width + this._name.x - 7;
-      for each(var clr:String in config.colors)
-        if(config[clr][this.uid])
-          this.colors_in.push(new ColorBtn(5, clr, (++i * 15) + more, 11));
+      var adjust:int = this._name.width + this._name.x - 7;
+      for each(var clr:String in config.colors) {
+        if(config[clr][this.uid]) {
+          var btn:ColorButton = new ColorButton(5, clr, (++i * 15) + adjust, 11);
+          btn.addEventListener(MouseEvent.RIGHT_CLICK, this.removeColor);
+          this.colors_in.push(btn);
+        }
+      }
     }
 
     public function updateQuickListBtn() : void {
+      if(this.btnQuickList == null) return;
       var color:String = config.cfg.active_color;
       this.btnQuickList.toggled = !!config[color][this.uid];
     }
 
     public function refreshColors() : void {
-      for each(var btn:ColorBtn in this.colors_in)
+      if(this._row == null) return;
+      for each(var btn:ColorButton in this.colors_in) {
+        btn.removeEventListener(MouseEvent.RIGHT_CLICK, this.removeColor);
         this._row.removeChild(btn);
+      }
 
       this.colors_in = [];
       this.buildColors();
 
-      for each(var btn:ColorBtn in this.colors_in)
-        this._row.addChild(btn);
-
-      this.updateQuickListBtn();
+      for each(var clrBtn:ColorButton in this.colors_in)
+        this._row.addChild(clrBtn);
     }
 
     /* ------------------- */
@@ -353,16 +370,16 @@ package {
       ExternalInterface.call("OnInviteToJoinMe", this.uid);
     }
 
-    public function onJoin() : void {
-      // ExternalInterface.call("OnJoinWorld", this.uid);
-      if(this.can_join) ExternalInterface.call("OnJoinWorld",this.uid);
+    public function onJoin(e:MouseEvent) : void {
+      ExternalInterface.call("OnJoinWorld", this.uid);
+      // if(this.can_join) ExternalInterface.call("OnJoinWorld", this.uid);
     }
 
-    public function onAccept() : void {
+    public function onAccept(e:MouseEvent) : void {
       ExternalInterface.call("OnAcceptRequest",this.uid);
     }
 
-    public function onFavorite() : void {
+    public function onFavorite(e:MouseEvent) : void {
       var previous:Boolean = !!config.favs[this.uid];
       this.btnFavorite.toggled = !previous;
 
@@ -377,7 +394,7 @@ package {
       }
     }
 
-    public function onQuickList() : void {
+    public function onQuickList(e:MouseEvent) : void {
       var color:String = config.cfg.active_color;
       var previous:Boolean = !!config[color][this.uid];
 
@@ -393,6 +410,19 @@ package {
 
       config.configWrite(color);
       this.refreshColors();
+      this.updateQuickListBtn();
+    }
+
+    /* ------------------- */
+    /* -- Remove Colors -- */
+    /* ------------------- */
+    private function removeColor(e:MouseEvent) : void {
+      var color:String = e.target.color;
+      config[color][this.uid] = null;
+      config.configWrite(color);
+      this.refreshColors();
+      this.updateQuickListBtn();
+      this.friends.onQuickListRemove(this, color);
     }
   }
 }
