@@ -16,7 +16,7 @@ package {
 
     public var friends:Friends;
 
-    private var _uid:String;
+    private var _uid:TextField;
     public var bg:Shape;
     private var _name:TextField;
     private var _is_online:Shape;
@@ -64,11 +64,15 @@ package {
     }
 
     public function set uid(uid:String) : void {
-      this._uid = uid;
+      if(!this._uid) {
+        this._uid = renderer.text("", 200, 0, 10, "left", -1, -1);
+        this._uid.textColor = 0xCECED7;
+      }
+      this._uid.text = uid;
     }
 
     public function get uid() : String {
-      return this._uid;
+      return this._uid.text;
     }
 
     public function set can_join(can_join:Boolean) : void {
@@ -276,6 +280,7 @@ package {
       this._row.addChild(this._is_online);
       this._row.addChild(this._rank);
       this._row.addChild(this._name);
+      this._row.addChild(this._uid);
       this._row.addChild(this._world);
       this._row.addChild(this.btnJoin);
       this._row.addChild(this.btnInvite);

@@ -204,7 +204,8 @@ package ui {
     }
 
     private function inviteAll(e:MouseEvent) : void {
-      this.friends.inviteColor(config.cfg.active_color);
+      for each (var color:String in config.colors)
+        this.friends.inviteColor(color);
     }
 
     // Others
