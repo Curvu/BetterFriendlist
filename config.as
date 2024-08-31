@@ -18,6 +18,7 @@ package {
     };
 
     public static var cfg:Object = {
+      "auto_whisper": false,
       "max_rows": 16,
       "drop_nameless": true,
       "default_tab": 0,
@@ -26,6 +27,7 @@ package {
     };
 
     private static const convar_types:Object = {
+      "auto_whisper":[CType.BOOL],
       "default_tab":[CType.UINT, 0, 3],
       "active_color":[CType.STRING],
       "drop_namepless":[CType.BOOL],

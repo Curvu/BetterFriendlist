@@ -82,7 +82,6 @@ package {
       return this._tab;
     }
 
-    //! Fix this ignored are not being added
     public function add(uid:String, name:String, is_online:Boolean = false, world:String = "", rank:String = "", can_join:Boolean = false, is_request:Boolean = false, can_accept:Boolean = false, can_invite:Boolean = false, is_ignored:Boolean = false) : void {
       if(this.lookup[uid]) return this.update(uid,name, is_online, world, rank, can_join,is_request, can_accept,can_invite,is_ignored);
       if(name == "" && config.cfg.drop_nameless) return;
@@ -424,6 +423,14 @@ package {
     }
 
     public function onSortTimerComplete(e:TimerEvent = null) : void {
+      if (config.cfg.auto_whisper) {
+        ExternalInterface.call("OnWhisper", "auto");
+        var timer:Timer = new Timer(100, 1);
+        timer.addEventListener(TimerEvent.TIMER_COMPLETE, function(e:TimerEvent):void {
+          ExternalInterface.call("OnRequestClose");
+        });
+        timer.start();
+      }
       this.render_list.length = 0;
 
       var list_all:Vector.<Friend> = this.updateRenderList();
