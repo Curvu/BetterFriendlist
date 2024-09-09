@@ -106,7 +106,7 @@ package {
     public function set rank(rank:String) : void {
       if(!this._rank) {
         this._rank = renderer.text("", 23, 0, 12, "left", -1, -1, false, true);
-        this._rank.textColor = renderer.RANK_COLOR;
+        this._rank.textColor = config.cfg.rank_color;
       }
       this._rank.text = rank.indexOf(MASTERY_RANK_FORMAT) == 0 ? rank.substring(MASTERY_RANK_FORMAT.length) : rank;
       if(this._name) this._name.x = 23 + int(Math.max(3, this._rank.width) + 0.5) - 3;
@@ -119,7 +119,7 @@ package {
     public function set name(name:String) : void {
       if(!this._name) {
         this._name = renderer.text("", 23, 0, 12, "left", -1, -1, false, true);
-        this._name.textColor = renderer.DEFAULT_NAME_COLOR;
+        this._name.textColor = config.cfg.default_name_color;
         this._name.mouseEnabled = true;
         this._name.addEventListener(MouseEvent.MOUSE_OVER, this.onNameMouseOver);
         this._name.addEventListener(MouseEvent.RIGHT_MOUSE_UP, this.onNameMouseUp);
@@ -177,7 +177,7 @@ package {
     public function set world(world:String) : void {
       if(!this._world) {
         this._world = renderer.text("", 23, 17, 10, "left", 230, 16);
-        this._world.textColor = 0xCECED7;
+        this._world.textColor = config.cfg.world_color;
       }
       this._world.text = world;
     }
@@ -188,7 +188,7 @@ package {
 
     public function set is_online(is_online:Boolean) : void {
       if(!this._is_online)
-        this._is_online = renderer.rectangle(new Shape(), 0, 0, 2, 37, renderer.GREEN, 1);
+        this._is_online = renderer.rectangle(new Shape(), 0, 0, 2, 37, config.cfg.online_color, 1);
       if(this._is_online.visible == is_online) return;
       this._is_online.visible = is_online;
       this.refreshColors();
@@ -255,7 +255,7 @@ package {
     public function set theme(theme:Boolean) : void {
       this._row.removeChild(this.bg);
       this.bg.graphics.clear();
-      this.bg = renderer.rectangle(new Shape(), 2, 0, 353, 37, theme ? renderer.GRAY_30 : renderer.GRAY_28, 1);
+      this.bg = renderer.rectangle(new Shape(), 2, 0, 353, 37, theme ? config.cfg.row_color_1 : config.cfg.row_color_2, 1);
       this._row.addChildAt(this.bg, 0);
     }
 
@@ -264,9 +264,9 @@ package {
       this.buildGroupBtns();
       this.buildColors();
 
-      this.bg = renderer.rectangle(new Shape(), 2, 0, 353, 37, renderer.GRAY_30, 1);
-      this._row = renderer.rectangle(new Sprite(), 0, 0, 2, 37, renderer.GRAY_38, 1);
-      var group_container:Shape = renderer.rectangle(new Shape(), 2, 0, 17, 37, renderer.GRAY_16, 0.5);
+      this.bg = renderer.rectangle(new Shape(), 2, 0, 353, 37, config.cfg.row_color_1, 1);
+      this._row = renderer.rectangle(new Sprite(), 0, 0, 2, 37, config.cfg.row_color, 1);
+      var group_container:Shape = renderer.rectangle(new Shape(), 2, 0, 17, 37, config.cfg.row_group_color, 0.5);
       this._row.addChild(this.bg);
       this._row.addChild(group_container);
 
@@ -297,9 +297,9 @@ package {
       this.btnInvite.x = 270;
       this.btnInvite.y = 5;
 
-      // if(!this.can_join) this.btnJoin.disabled = true;
-      // else this.btnJoin.addEventListener(MouseEvent.CLICK,this.onJoin);
-      this.btnJoin.addEventListener(MouseEvent.CLICK,this.onJoin);
+      if(!this.can_join) this.btnJoin.disabled = true;
+      else this.btnJoin.addEventListener(MouseEvent.CLICK,this.onJoin);
+      // this.btnJoin.addEventListener(MouseEvent.CLICK,this.onJoin);
 
       this.btnInvite.addEventListener(MouseEvent.CLICK,this.onInvite);
 
@@ -317,7 +317,7 @@ package {
       this.btnFavorite.y = 3;
       if(config.favs[this.uid]) {
         this.btnFavorite.toggled = true;
-        this._name.textColor = renderer.FAVORITE_COLOR;
+        this._name.textColor = config.cfg.favorite_color;
       }
 
       // Quick List
@@ -371,8 +371,8 @@ package {
     }
 
     public function onJoin(e:MouseEvent) : void {
-      ExternalInterface.call("OnJoinWorld", this.uid);
-      // if(this.can_join) ExternalInterface.call("OnJoinWorld", this.uid);
+      // ExternalInterface.call("OnJoinWorld", this.uid);
+      if(this.can_join) ExternalInterface.call("OnJoinWorld", this.uid);
     }
 
     public function onAccept(e:MouseEvent) : void {
@@ -384,11 +384,11 @@ package {
       this.btnFavorite.toggled = !previous;
 
       if(previous) { // If favorite - remove it
-        this._name.textColor = renderer.DEFAULT_NAME_COLOR;
+        this._name.textColor = config.cfg.default_name_color;
         config.favs[this.uid] = null;
         this.friends.onFavoriteRemove(this);
       } else { // If default - make it favorite
-        this._name.textColor = renderer.FAVORITE_COLOR;
+        this._name.textColor = config.cfg.favorite_color;
         config.favs[this.uid] = true;
         this.friends.onFavoriteAdd(this);
       }

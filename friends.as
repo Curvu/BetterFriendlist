@@ -207,7 +207,7 @@ package {
     }
 
     private function buildContainer() : void {
-      this.full_list = renderer.rectangle(new Sprite(), 0, 0, 364, 41, renderer.GRAY_16, 1);
+      this.full_list = renderer.rectangle(new Sprite(), 0, 0, 364, 41, config.darken(config.cfg.fl_color, 0.4), 1);
       this.full_list.x = 5;
       this.full_list.y = 150 + config.cfg.vertical_offset;
 
@@ -215,8 +215,8 @@ package {
       this.container.x = 1;
       this.container.y = 1;
 
-      renderer.rectangle(this.full_list, 1, 1, 355, 39, renderer.GRAY_22, 1);
-      this.clipping_mask = renderer.rectangle(new Sprite(), 0, 0, 355, 1, 16711935, 1);
+      renderer.rectangle(this.full_list, 1, 1, 355, 39, config.cfg.fl_color, 1);
+      this.clipping_mask = renderer.rectangle(new Sprite(), 0, 0, 355, 1, renderer.MASK, 1);
       this.clipping_mask.x = 1;
       this.clipping_mask.y = 1;
       this.container.mask = this.clipping_mask;
@@ -241,8 +241,8 @@ package {
 
     private function buildScrollbar() : void {
       this.scroll = {};
-      this.scroll.color = [renderer.GRAY_38, renderer.GRAY_28];
-      this.scroll.bar = renderer.rectangle(new Sprite(), 0, 0, 6, 38, renderer.GRAY_16,1);
+      this.scroll.color = [config.cfg.scrubber_color_1, config.cfg.scrubber_color_2];
+      this.scroll.bar = renderer.rectangle(new Sprite(), 0, 0, 6, 38, config.cfg.bar_color, 1);
       this.scroll.bar.mouseEnabled = true;
       this.scroll.bar.x = 357;
       this.scroll.bar.y = 1;
@@ -292,7 +292,7 @@ package {
 
     private function onMouseMove(e:MouseEvent) : void {
       var realY:int = e.localY - 400 + this.scroll.offset;
-      this.scroll.scrubber.y = Math.max(0,Math.min(this.scroll.bar.height - this.scroll.scrubber.height - 800, realY - int(this.scroll.scrubber.height / 2)));
+      this.scroll.scrubber.y = Math.max(0, Math.min(this.scroll.bar.height - this.scroll.scrubber.height - 800, realY - int(this.scroll.scrubber.height / 2)));
       var percent:Number = this.getScrollPercent();
       this.container.y = 1 - int(percent * (Math.max(this.render_list.length * 39, 1) - config.cfg.max_rows * 39) + 0.5);
       this.setupRows();
@@ -314,16 +314,16 @@ package {
       var size:int = config.getScrubberSize(this.render_list.length, 24);
       renderer.rectangle(this.scroll.scrubber, 0, 0, 6, size, this.scroll.color[0], 1);
       renderer.rectangle(this.scroll.scrubber, 1, 1, 4, size - 2, this.scroll.color[1], 1);
-      renderer.rectangle(this.scroll.bar, 0, 0, 7, h, renderer.GRAY_16,1);
-      renderer.rectangle(this.scroll.zone, 0, 0, 1600, h + 800, 16711935, 0);
+      renderer.rectangle(this.scroll.bar, 0, 0, 7, h, config.darken(config.cfg.fl_color, 0.6), 1);
+      renderer.rectangle(this.scroll.zone, 0, 0, 1600, h + 800, renderer.MASK, 0);
       w = 364;
 
       this.clipping_mask.scaleY = h;
       this.full_list.graphics.clear();
-      renderer.rectangle(this.full_list, 0, 0, w, h + 2, renderer.GRAY_16,1);
-      renderer.rectangle(this.full_list, 1, 1, 355, h, renderer.GRAY_25, 1);
-      if (this.render_list.length == 0) renderer.rectangle(this.full_list, 0, 0, w, 38, renderer.GRAY_16, 1);
-      else if(h <= 1) renderer.rectangle(this.full_list, 0, 0, w, 39, renderer.GRAY_16, 1);
+      renderer.rectangle(this.full_list, 0, 0, w, h + 2, config.darken(config.cfg.fl_color, 0.4), 1);
+      renderer.rectangle(this.full_list, 1, 1, 355, h, config.cfg.fl_color, 1);
+      if (this.render_list.length == 0) renderer.rectangle(this.full_list, 0, 0, w, 38, config.darken(config.cfg.fl_color, 0.4), 1);
+      else if(h <= 1) renderer.rectangle(this.full_list, 0, 0, w, 39, config.darken(config.cfg.fl_color, 0.4), 1);
     }
 
     /* ---------------- */

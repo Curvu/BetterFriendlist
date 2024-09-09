@@ -4,6 +4,7 @@ package components.helparea {
 
   public class HelpArea extends Sprite {
     private var text_area:TextField;
+    private var color:uint = config.cfg.help_area_color;
 
     public function HelpArea(strings:Array, x:int, y:int) {
       super();
@@ -16,7 +17,7 @@ package components.helparea {
           longest = str.length;
 
       // create the text area
-      renderer.borderRectangle(this, x, y, longest * 4.75, strings.length * 12 + 20, renderer.GRAY_30, renderer.GRAY_12);
+      renderer.borderRectangle(this, x, y, longest * 4.75, strings.length * 12 + 20, color, config.darken(color, 0.25));
 
       for each(var s:String in strings) {
         text_area = renderer.text(s, x + 5, y + 3, 11, "left", longest * 8, 12);

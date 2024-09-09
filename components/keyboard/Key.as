@@ -10,14 +10,15 @@ package components.keyboard {
     private var _text:TextField;
     private var border:Sprite;
     private var body:Sprite;
+    private static const color = config.cfg.keyboard_key_color;
 
     private var listeners:Array = [];
 
     public function Key(w:int, h:int, txt:String = "", x:int = 0, y:int = 0) {
       super();
 
-      this.border = renderer.rectangle(new Sprite(), x-1, y-1, w+2, h+2, renderer.GRAY_12);
-      this.body = renderer.rectangle(new Sprite(), x, y, w, h, renderer.GRAY_28);
+      this.border = renderer.rectangle(new Sprite(), x-1, y-1, w+2, h+2, config.darken(color, 0.25));
+      this.body = renderer.rectangle(new Sprite(), x, y, w, h, color);
 
       this._text = renderer.text(txt, 0, 0, 9, "center", w, h-2);
       this._text.x = x + (w - this._text.width) / 2;
@@ -40,23 +41,23 @@ package components.keyboard {
 
     private function onMouseOver(e:MouseEvent) : void {
       this.border.transform.colorTransform = renderer.hexToRGB(renderer.WHITE);
-      this.body.transform.colorTransform = renderer.hexToRGB(renderer.GRAY_22);
+      this.body.transform.colorTransform = renderer.hexToRGB(config.darken(color, 0.5));
     }
 
     private function onMouseOut(e:MouseEvent) : void {
-      this.border.transform.colorTransform = renderer.hexToRGB(renderer.GRAY_12);
-      this.body.transform.colorTransform = renderer.hexToRGB(renderer.GRAY_28);
+      this.border.transform.colorTransform = renderer.hexToRGB(config.darken(color, 0.25));
+      this.body.transform.colorTransform = renderer.hexToRGB(color);
     }
 
     private function onMouseDown(e:MouseEvent) : void {
-      ExternalInterface.call("POST_SOUND_EVENT",CLICK_SOUND);
-      this.border.transform.colorTransform = renderer.hexToRGB(renderer.GRAY_9);
-      this.body.transform.colorTransform = renderer.hexToRGB(renderer.GRAY_16);
+      ExternalInterface.call("POST_SOUND_EVENT", CLICK_SOUND);
+      this.border.transform.colorTransform = renderer.hexToRGB(config.darken(color, 0.15));
+      this.body.transform.colorTransform = renderer.hexToRGB(config.darken(color, 0.35));
     }
 
     private function onMouseUp(e:MouseEvent) : void {
-      this.border.transform.colorTransform = renderer.hexToRGB(renderer.GRAY_12);
-      this.body.transform.colorTransform = renderer.hexToRGB(renderer.GRAY_28);
+      this.border.transform.colorTransform = renderer.hexToRGB(config.darken(color, 0.25));
+      this.body.transform.colorTransform = renderer.hexToRGB(color);
     }
 
     private function onClick(e:MouseEvent) : void {

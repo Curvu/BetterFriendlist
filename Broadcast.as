@@ -24,11 +24,11 @@ package {
 
     public function onLoadModConfiguration(key:String, val:String) : void {
       config.onLoadModConfig(key,val);
-      if(key == "betterfriendlist:default-tab") {
+      if(key == "default-tab") {
         this.friends.tab = int(Number(val));
-      } else if(key == "betterfriendlist:vertical-offset") {
+      } else if(key == "vertical-offset") {
         this.friends.applyOffset(int(Number(val)));
-      } else if(key == "betterfriendlist:max-rows") {
+      } else if(key == "max-rows") {
         this.friends.onSortTimerComplete();
       }
     }

@@ -11,26 +11,11 @@ package {
     private static const TEXT_FORMAT_DEFAULT:TextFormat = new TextFormat("Open Sans", 12, 0xFFFFFF, false);
     private static const TEXT_FORMAT_SMALL:TextFormat = new TextFormat("Open Sans", 9, 0x484D71, true, false, false, null, null, "center");
 
-    public static const FMT:TextFormat = new TextFormat("Open Sans", null, WHITE, null, false, false, null, null);
-    public static const SHADOW:DropShadowFilter = new DropShadowFilter(1, 45, 0, 1, 0, 0, 1, 1);
+    private static const FMT:TextFormat = new TextFormat("Open Sans", null, WHITE, null, false, false, null, null);
+    private static const SHADOW:DropShadowFilter = new DropShadowFilter(1, 45, 0, 1, 0, 0, 1, 1);
 
-    public static const GREEN:uint = 0x50DB66;
-    public static const BLACK:uint = 0x000000;
     public static const WHITE:uint = 0xFFFFFF;
-    public static const GRAY_9:uint = 0x090909;
-    public static const GRAY_12:int = 0x0C0C0C;
-    public static const GRAY_16:int = 0x101010;
-    public static const GRAY_22:int = 0x161616;
-    public static const GRAY_25:int = 0x191919;
-    public static const GRAY_28:int = 0x1C1C1C;
-    public static const GRAY_30:int = 0x1E1E1E;
-    public static const GRAY_34:int = 0x222222;
-    public static const GRAY_38:int = 0x262626;
-    public static const GRAY_41:int = 0x292929;
-    public static const GRAY_48:int = 0x303030;
-    public static const DEFAULT_NAME_COLOR:int = 0xF7F7F7;
-    public static const RANK_COLOR:int = 0xFFDE4D;
-    public static const FAVORITE_COLOR:int = 0xF73670;
+    public static const MASK:uint = 0xFF00FF;
 
     public static const COLORS:Object = {
       "red": 0xFE014C,
@@ -56,6 +41,16 @@ package {
       var blue:uint = hex & 0xFF;
 
       return new ColorTransform(0, 0, 0, 1, red, green, blue, 0);
+    }
+
+    public static function rgbToHex(rgb:uint):String {
+      var r:uint = (rgb >> 16) & 0xFF;
+      var g:uint = (rgb >> 8) & 0xFF;
+      var b:uint = rgb & 0xFF;
+      var rh:String = (r < 16 ? "0" : "") + r.toString(16);
+      var gh:String = (g < 16 ? "0" : "") + g.toString(16);
+      var bh:String = (b < 16 ? "0" : "") + b.toString(16);
+      return "#" + rh + gh + bh;
     }
 
     public static function rectangle(s:*, x:int = 0, y:int = 0, w:int = 0, h:int = 0, rgb:int = 0, a:Number = 1) : * {

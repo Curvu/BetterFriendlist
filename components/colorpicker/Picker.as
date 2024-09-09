@@ -7,6 +7,7 @@ package components.colorpicker {
   public class Picker extends Sprite {
     private var friends:Friends;
     private var header:Header;
+    private var color:uint = config.cfg.color_picker_color;
 
     private var color_btns:Object = {};
     private var _active_color:String;
@@ -17,8 +18,8 @@ package components.colorpicker {
       this.header = header;
       this._active_color = config.cfg.active_color;
 
-      renderer.rounded(this, -1, -1, 18, 146, 10, renderer.GRAY_12);
-      renderer.rounded(this, 0, 0, 16, 144, 8, renderer.GRAY_30);
+      renderer.rounded(this, -1, -1, 18, 146, 10, config.darken(color, 0.25));
+      renderer.rounded(this, 0, 0, 16, 144, 8, color);
       this.x = 366;
 
       this.buildColors();

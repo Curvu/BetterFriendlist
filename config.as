@@ -19,20 +19,62 @@ package {
 
     public static var cfg:Object = {
       "auto_whisper": false,
-      "max_rows": 16,
-      "drop_nameless": true,
       "default_tab": 0,
       "active_color": "red",
-      "vertical_offset": 0
+      "drop_nameless": true,
+      "max_rows": 16,
+      "vertical_offset": 0,
+      "default_name_color": "0xF7F7F7",
+      "world_color": "0xCECED7",
+      "rank_color": "0xFFDE4D",
+      "favorite_color": "0xF73670",
+      "notification_color": "0xF73670",
+      "online_color": "0x50DB66",
+      "keyboard_color": "0x1E1E1E",
+      "keyboard_input_color": "0x222222",
+      "keyboard_key_color": "0x1C1C1C",
+      "button_color": "0x1C1C1C",
+      "color_picker_color": "0x1E1E1E",
+      "help_area_color": "0x1E1E1E",
+      "row_color": "0x262626",
+      "row_color_1": "0x1E1E1E",
+      "row_color_2": "0x1C1C1C",
+      "row_group_color": "0x101010",
+      "scrubber_color_1": "0x262626",
+      "scrubber_color_2": "0x1C1C1C",
+      "bar_color": "0x101010",
+      "fl_color": "0x191919",
+      "header_color": "0x191919"
     };
 
     private static const convar_types:Object = {
       "auto_whisper":[CType.BOOL],
       "default_tab":[CType.UINT, 0, 3],
       "active_color":[CType.STRING],
-      "drop_namepless":[CType.BOOL],
+      "drop_nameless":[CType.BOOL],
       "vertical_offset":[CType.INT, -1000, 1000],
-      "max_rows":[CType.UINT, 1, 25]
+      "max_rows":[CType.UINT, 1, 25],
+      "default_name_color":[CType.STRING],
+      "world_color":[CType.STRING],
+      "rank_color":[CType.STRING],
+      "favorite_color":[CType.STRING],
+      "notification_color":[CType.STRING],
+      "online_color":[CType.STRING],
+      "keyboard_color":[CType.STRING],
+      "keyboard_input_color":[CType.STRING],
+      "keyboard_key_color":[CType.STRING],
+      "button_color":[CType.STRING],
+      "color_picker_color":[CType.STRING],
+      "help_area_color":[CType.STRING],
+      "row_color":[CType.STRING],
+      "row_color_1":[CType.STRING],
+      "row_color_2":[CType.STRING],
+      "row_group_color":[CType.STRING],
+      "scrubber_color_1":[CType.STRING],
+      "scrubber_color_2":[CType.STRING],
+      "bar_color":[CType.STRING],
+      "fl_color":[CType.STRING],
+      "header_color":[CType.STRING]
     };
 
     public static var msg:Object = {
@@ -70,10 +112,6 @@ package {
     }
 
     public static function onLoadModConfig(key:String, val:String) : void {
-      if(key.indexOf(MOD_NAME + ":") == 0) configRead(key.substring(MOD_NAME.length + 1).replace("-","_"), val);
-    }
-
-    private static function configRead(key:String, val:String) : void {
       var arr:Array = null;
       if(cfg[key] != null) {
         switch(convar_types[key][0]) {
@@ -149,7 +187,7 @@ package {
       }
 
       if(out != "")
-        ExternalInterface.call("UIComponent.OnSaveConfig", FILE_NAME, MOD_NAME + ":" + key.replace("_","-"), out);
+        ExternalInterface.call("UIComponent.OnSaveConfig", FILE_NAME, key.replace("_","-"), out);
     }
 
     private static function processConfigList(val:String) : Array {

@@ -7,6 +7,8 @@ package components.buttons {
   public class Button extends Sprite {
     public static const CLICK_SOUND:String = "Play_ui_button_select";
 
+    private var color:uint = config.cfg.button_color;
+
     private var _text:TextField;
     private var body:Sprite;
 
@@ -21,7 +23,7 @@ package components.buttons {
       this.disabled = disabled;
       this._msg = txt;
 
-      this.body = renderer.rectangle(new Sprite(), x, y, w, h, renderer.GRAY_28);
+      this.body = renderer.rectangle(new Sprite(), x, y, w, h, color);
 
       this._text = renderer.text(txt, 0, 0, 9, "center", w, h-2);
       this._text.x = x + (w - this._text.width) / 2;
@@ -42,22 +44,22 @@ package components.buttons {
     }
 
     private function onMouseOver(e:MouseEvent) : void {
-      this.body.transform.colorTransform = renderer.hexToRGB(renderer.GRAY_25);
+      this.body.transform.colorTransform = renderer.hexToRGB(config.darken(color, 0.75));
     }
 
     private function onMouseOut(e:MouseEvent) : void {
-      this.body.transform.colorTransform = renderer.hexToRGB(renderer.GRAY_28);
+      this.body.transform.colorTransform = renderer.hexToRGB(color);
     }
 
     private function onMouseDown(e:MouseEvent) : void {
       if (this.disabled) return;
-      ExternalInterface.call("POST_SOUND_EVENT",CLICK_SOUND);
-      this.body.transform.colorTransform = renderer.hexToRGB(renderer.GRAY_22);
+      ExternalInterface.call("POST_SOUND_EVENT", CLICK_SOUND);
+      this.body.transform.colorTransform = renderer.hexToRGB(config.darken(color, 0.65));
     }
 
     private function onMouseUp(e:MouseEvent) : void {
       if (this.disabled) return;
-      this.body.transform.colorTransform = renderer.hexToRGB(renderer.GRAY_28);
+      this.body.transform.colorTransform = renderer.hexToRGB(color);
     }
 
     private function onClick(e:MouseEvent) : void {

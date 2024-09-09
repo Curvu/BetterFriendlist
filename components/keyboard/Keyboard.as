@@ -6,8 +6,9 @@ package components.keyboard {
 
   public class Keyboard extends Sprite {
     private var friends:Friends;
+    private var color:uint = config.cfg.keyboard_color;
 
-    private var characters:String = "1234567890QWERTYUIOPASDFGHJKL_ZXCVBNM"
+    private var characters:String = "1234567890QWERTYUIOPASDFGHJKL_ZXCVBNM";
 
     private var inputContainer:Shape;
     private var inputField:TextField;
@@ -17,7 +18,7 @@ package components.keyboard {
       super();
       this.friends = friends;
 
-      renderer.borderRectangle(this, x, y, 200, 102, renderer.GRAY_30, renderer.GRAY_12);
+      renderer.borderRectangle(this, x, y, 200, 102, color, config.darken(color, 0.25));
       this.visible = false;
 
       var key:Key;
@@ -44,7 +45,7 @@ package components.keyboard {
       this.addChild(key);
 
       // input field
-      this.inputContainer = renderer.rectangle(new Shape(), x + 2, y + 2, 196, 19, renderer.GRAY_34);
+      this.inputContainer = renderer.rectangle(new Shape(), x + 2, y + 2, 196, 19, config.cfg.keyboard_input_color);
       this.inputField = renderer.text("", x + 3, y, 12, "left", 195, 18);
       this.addChild(this.inputContainer);
       this.addChild(this.inputField);

@@ -36,8 +36,8 @@ package ui {
       this.friends = friends;
 
       this._width = 364;
-      this.main = renderer.rectangle(new Sprite(), 0, -1, _width, 45, renderer.GRAY_22, 1);
-      this.items = renderer.rectangle(new Sprite(), 0, 29, _width, 15, renderer.GRAY_16, 1);
+      this.main = renderer.rectangle(new Sprite(), 0, -1, _width, 45, config.cfg.header_color, 1);
+      this.items = renderer.rectangle(new Sprite(), 0, 29, _width, 15, config.darken(config.cfg.header_color, 0.4), 1);
       this.y = -43;
       this.addChild(this.main);
       this.addChild(this.items);
@@ -49,7 +49,7 @@ package ui {
       this.buildHeaderItems();
 
       this._requests = renderer.text("", 121, -1, 10, "left", 0, 0, false, true);
-      this._requests.textColor = renderer.FAVORITE_COLOR;
+      this._requests.textColor = config.cfg.notification_color;
       this.main.addChild(this._requests);
 
       this.picker = new Picker(this.friends, this);
@@ -231,7 +231,7 @@ package ui {
 
     public function updateField():void {
       if (this.friends.tab == config.TAB_ALL) {
-        this._field.htmlText = "<b>"+renderer.font(this._online.toString(), "#50DB66")+"</b>"+renderer.font("/"+(this._count).toString(), "#CECED7");
+        this._field.htmlText = "<b>"+renderer.font(this._online.toString(), renderer.rgbToHex(config.cfg.online_color))+"</b>"+renderer.font("/"+(this._count).toString(), "#CECED7");
       } else if (this.friends.tab == config.TAB_QUICK) {
         this._field.htmlText = "<b>"+renderer.font(this.friends.list_colors[config.cfg.active_color].length.toString(), "#CECED7")+"</b>";
       } else this._field.htmlText = "";
